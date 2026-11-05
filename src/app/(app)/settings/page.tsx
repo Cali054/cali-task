@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Database, Download, ShieldCheck, Palette, Pencil, Plus, RotateCcw, Rocket, Sparkles, Trash2, Upload, UserRound } from "lucide-react";
+import { Database, Download, FlaskConical, ShieldCheck, Palette, Pencil, Plus, RotateCcw, Rocket, Sparkles, Trash2, Upload, UserRound } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-store";
 import type { AppData } from "@/lib/types";
@@ -18,6 +18,7 @@ export default function SettingsPage() {
   const { openSprintForm, setIntro } = useUI();
   const [name, setName] = useState(store.settings.userName);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [confirmSample, setConfirmSample] = useState(false);
   const [sprintToDelete, setSprintToDelete] = useState<string | null>(null);
   const [message, setMessage] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -184,8 +185,11 @@ export default function SettingsPage() {
               e.target.value = "";
             }}
           />
+          <Button onClick={() => setConfirmSample(true)}>
+            <FlaskConical className="size-4" /> Load sample data
+          </Button>
           <Button variant="ghost" className="text-st-blocked" onClick={() => setConfirmReset(true)}>
-            <RotateCcw className="size-4" /> Reset to sample data
+            <RotateCcw className="size-4" /> Clear workspace
           </Button>
         </div>
       </GlassCard>
@@ -193,14 +197,23 @@ export default function SettingsPage() {
       <ConfirmDialog
         open={confirmReset}
         onOpenChange={setConfirmReset}
-        title="Reset workspace?"
-        text="All tasks, sprints and history will be replaced with the original Sprint 2 sample data. Export first if you want a backup."
-        confirmLabel="Reset"
+        title="Clear workspace?"
+        text="All tasks, sprints and history will be deleted, leaving one empty sprint. Export first if you want a backup."
+        confirmLabel="Clear"
         onConfirm={() => {
-          const keep = store.settings.userName;
           store.resetData();
-          store.updateSettings({ userName: keep });
-          setMessage({ tone: "ok", text: "Workspace reset to sample data." });
+          setMessage({ tone: "ok", text: "Workspace cleared." });
+        }}
+      />
+      <ConfirmDialog
+        open={confirmSample}
+        onOpenChange={setConfirmSample}
+        title="Load sample data?"
+        text="Your tasks, sprints and history will be replaced with the Sprint 2 example tasks. Export first if you want a backup."
+        confirmLabel="Load sample"
+        onConfirm={() => {
+          store.loadSampleData();
+          setMessage({ tone: "ok", text: "Sample Sprint 2 data loaded." });
         }}
       />
       <ConfirmDialog

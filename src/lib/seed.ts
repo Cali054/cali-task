@@ -103,3 +103,30 @@ export function buildSeed(): AppData {
     settings: { userName: "Cali", showIntro: true },
   };
 }
+
+/** A fresh workspace for a new account: one empty sprint starting today. */
+export function buildEmptyWorkspace(userName = "Cali"): AppData {
+  const now = new Date().toISOString();
+  const start = nextWorkingDay(today());
+  const sprintId = uid();
+  return {
+    version: 1,
+    activeSprintId: sprintId,
+    sprints: [
+      {
+        id: sprintId,
+        name: "Sprint 1",
+        goal: "",
+        startDate: start,
+        endDate: addWorkingDays(start, 10),
+        targetLabel: "",
+        targetDaysMin: null,
+        targetDaysMax: null,
+        createdAt: now,
+      },
+    ],
+    tasks: [],
+    activity: [{ id: uid(), at: now, taskId: null, kind: "sprint", message: "Workspace created" }],
+    settings: { userName, showIntro: true },
+  };
+}

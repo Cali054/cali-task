@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { buildSeed } from "./seed";
+import { buildEmptyWorkspace, buildSeed } from "./seed";
 import { STORAGE_KEY, workspaceStorage } from "./persistence";
 import type {
   Activity,
@@ -34,7 +34,10 @@ interface Actions {
 
   updateSettings: (patch: Partial<Settings>) => void;
   importData: (data: AppData) => void;
+  /** Clears the workspace back to one empty sprint. */
   resetData: () => void;
+  /** Replaces the workspace with the Sprint 2 sample tasks. */
+  loadSampleData: () => void;
 }
 
 export type Store = AppData & Actions;
@@ -68,7 +71,7 @@ function transition(task: Task, to: Status): Task {
 export const useStore = create<Store>()(
   persist(
     (set, get) => ({
-      ...buildSeed(),
+      ...buildEmptyWorkspace(),
 
       addTask: (input) => {
         const now = new Date().toISOString();
@@ -240,7 +243,9 @@ export const useStore = create<Store>()(
           settings: data.settings,
         }),
 
-      resetData: () => set({ ...buildSeed() }),
+      resetData: () => set((s) => ({ ...buildEmptyWorkspace(s.settings.userName) })),
+
+      loadSampleData: () => set((s) => ({ ...buildSeed(), settings: s.settings })),
     }),
     {
       name: STORAGE_KEY,
@@ -276,7 +281,7 @@ export function useSprintTasks() {
 /**
  * Points the store at the signed-in user's workspace. Each account gets its
  * own storage key; a workspace saved before accounts existed is handed to the
- * first account that signs in. New workspaces start from the Sprint 2 seed.
+ * first account that signs in. New accounts start with an empty workspace.
  */
 export async function bindWorkspace(userId: string, displayName: string) {
   const name = `${STORAGE_KEY}:${userId}`;
@@ -294,7 +299,6 @@ export async function bindWorkspace(userId: string, displayName: string) {
   if (existing) {
     await useStore.persist.rehydrate();
   } else {
-    const seed = buildSeed();
-    useStore.setState({ ...seed, settings: { ...seed.settings, userName: displayName } });
+    useStore.setState(buildEmptyWorkspace(displayName));
   }
 }

@@ -331,7 +331,23 @@ export default function OverviewPage() {
           />
           <div className="mt-3 space-y-1">
             {upNext.length === 0 ? (
-              <EmptyState icon={CheckCircle2} title="Nothing queued" text="Every open task is either done or blocked." />
+              tasks.length === 0 ? (
+                <EmptyState
+                  icon={Plus}
+                  title="No tasks yet"
+                  text="Add your first task to start tracking this sprint."
+                  action={
+                    <button
+                      onClick={() => ui.openNewTask()}
+                      className="accent-gradient inline-flex h-10 items-center gap-2 rounded-2xl px-4 text-sm font-semibold text-white"
+                    >
+                      <Plus className="size-4" /> New task
+                    </button>
+                  }
+                />
+              ) : (
+                <EmptyState icon={CheckCircle2} title="Nothing queued" text="Every open task is either done or blocked." />
+              )
             ) : (
               upNext.map((t) => <TaskRow key={t.id} task={t} onClick={() => ui.openDetail(t.id)} />)
             )}
