@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cali's Task
 
-## Getting Started
+**Plan. Track. Complete.** A personal task and sprint monitoring dashboard with a liquid-glass look.
 
-First, run the development server:
+## Run it
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000. Production build: `npm run build && npm start`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Next.js 16 (App Router) + React 19 + TypeScript**
+- **Tailwind CSS v4.** Design tokens and glass primitives live in `src/app/globals.css`.
+- **Motion** handles the intro, page entrances, the nav highlight, and card movement.
+- **Radix Dialog** powers the glass modals, written as shadcn-style primitives in `src/components/ui`.
+- **Lucide** icons
+- **Recharts** draws the burndown, estimated vs. actual, daily productivity, and completion history charts.
+- **dnd-kit** drives the Kanban drag-and-drop (mouse, touch and keyboard).
+- **Zustand** is the app state.
 
-## Learn More
+## Where things are
 
-To learn more about Next.js, take a look at the following resources:
+| Path | What |
+|---|---|
+| `src/lib/types.ts` | Data model (Task, Sprint, Blocker, TimeLog, Activity) |
+| `src/lib/seed.ts` | Sprint 2 sample data (the 7 imported tasks) |
+| `src/lib/store.ts` | All actions: CRUD, status transitions, blockers, time logs, sprints |
+| `src/lib/persistence.ts` | **Storage adapter.** This is the one place to swap in a real backend. |
+| `src/lib/metrics.ts` | Sprint metrics, burndown, and daily productivity |
+| `src/components/shell` | Intro, sidebar, mobile drawer, top bar (search, sprint selector, notifications, profile) |
+| `src/components/dialogs` | Task form, task detail, blocker, progress, and sprint modals |
+| `src/app/*` | Pages: Overview, My Tasks, Sprint Board, Timeline, Blocked Tasks, Reports, Settings |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Accounts & sign-in
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+On a new browser session the intro plays, then hands off to `/login` (or straight to the dashboard if you
+chose "Remember me"). Routes:
 
-## Deploy on Vercel
+| Route | What |
+|---|---|
+| `/login` | Email/username + password, show/hide, Remember me, inline validation, error shake |
+| `/signup` | Full name, email, username, password (strength meter) + confirm, required consent checkbox |
+| `/forgot-password` | Resets a password by confirming the account's email **and** username |
+| `/privacy-policy`, `/terms-and-conditions` | Full legal pages; the same text opens in a glass modal during signup |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Accounts are stored in this browser (`cali-task:users`). Passwords are salted and hashed with PBKDF2-SHA-256
+via Web Crypto, never stored in plain text. Each account has its own workspace
+(`cali-task:workspace:<userId>`). At signup the user's consent is recorded with the document version and an
+acceptance timestamp; it's shown in Settings → Profile.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+To use a real backend, replace the functions in `authAdapter` (`src/lib/auth.ts`). Swap the reset flow for an
+emailed token there too. There's no Google sign-in button because no OAuth provider is configured yet.
+
+**Before you publish:** set `contactEmail` and `jurisdiction` in `src/lib/legal.ts` (they're placeholders),
+and bump `version` whenever you edit the documents.
+
+## Persistence
+
+Data is stored in the browser's `localStorage`, one workspace per account. To use a real database, implement
+the `StateStorage` interface (`getItem` / `setItem` / `removeItem`) in `src/lib/persistence.ts` against
+your API. Nothing else needs to change. Settings → Data can export, import, or reset the workspace as JSON.
+
+## Planning metrics
+
+Sprint 2's committed target is "2–3 days + testing", but its task estimates add up to 6 days. The Overview
+"Planning check" card shows both numbers side by side and flags the gap.
