@@ -113,15 +113,15 @@ export default function BlockedPage() {
       <PageHeader
         title="Blocked Tasks"
         subtitle={blocked.length ? `${blocked.length} task${blocked.length > 1 ? "s" : ""} waiting on clarification` : "Nothing is blocked"}
-        actions={<Button variant="danger" onClick={() => openBlocker("")}><Ban className="size-4" /> Add blocker</Button>}
+        actions={<Button variant="danger" onClick={() => openBlocker("")} data-tour="blocked-add"><Ban className="size-4" /> Add blocker</Button>}
       />
 
       {blocked.length === 0 ? (
-        <GlassCard>
+        <GlassCard data-tour="blocked-list">
           <EmptyState icon={CheckCircle2} title="No blocked tasks" text="When something can't move forward, flag it here to track who you're waiting on." />
         </GlassCard>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4" data-tour="blocked-list">
           <AnimatePresence>{blocked.map((t) => <BlockedCard key={t.id} task={t} />)}</AnimatePresence>
         </div>
       )}

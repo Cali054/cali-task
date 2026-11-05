@@ -6,6 +6,7 @@ import { useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-store";
 import type { AppData } from "@/lib/types";
 import { MAX_BACKUP_BYTES, parseBackup } from "@/lib/backup";
+import { TOUR_IDS } from "@/lib/tours";
 import { fmtDate, fmtDateTime, today } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { getShowIntro, setShowIntro } from "@/lib/prefs";
@@ -75,7 +76,7 @@ export default function SettingsPage() {
       )}
 
       <div className="grid gap-5 xl:grid-cols-2">
-        <GlassCard className="p-5">
+        <GlassCard className="p-5" data-tour="settings-profile">
           <CardHeader title="Profile" subtitle="Shown in your welcome message" icon={UserRound} />
           {user && (
             <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
@@ -109,7 +110,7 @@ export default function SettingsPage() {
           </form>
         </GlassCard>
 
-        <GlassCard className="p-5">
+        <GlassCard className="p-5" data-tour="settings-appearance">
           <CardHeader title="Appearance" subtitle="Saved on this device" icon={Palette} />
           <div className="mt-4 space-y-4">
             <ThemeSwitch className="max-w-sm" />
@@ -129,11 +130,41 @@ export default function SettingsPage() {
               />
             </label>
             <Button size="sm" onClick={() => setIntro("show")}><Sparkles className="size-3.5" /> Replay intro</Button>
+            <div className="space-y-3 border-t border-line pt-4">
+              <label className="flex cursor-pointer items-center justify-between gap-4 text-sm">
+                <span>
+                  <span className="block font-medium">Guided tours</span>
+                  <span className="text-xs text-fg-3">
+                    Show a short walkthrough the first time you open each page. Use the ? button to replay one anytime.
+                  </span>
+                </span>
+                <input
+                  type="checkbox"
+                  className="size-5 accent-[var(--accent)]"
+                  checked={!!store.settings.tours?.auto}
+                  onChange={(e) => store.setAutoTours(e.target.checked)}
+                />
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    store.restartTours();
+                    setMessage({ tone: "ok", text: "Tours restarted — each page will show its walkthrough again." });
+                  }}
+                >
+                  <RotateCcw className="size-3.5" /> Restart all tours
+                </Button>
+                <span className="text-xs text-fg-3">
+                  {store.settings.tours?.seen.length ?? 0} of {TOUR_IDS.length} completed
+                </span>
+              </div>
+            </div>
           </div>
         </GlassCard>
       </div>
 
-      <GlassCard className="p-5">
+      <GlassCard className="p-5" data-tour="settings-sprints">
         <CardHeader
           title="Sprints"
           subtitle={`${store.sprints.length} sprint${store.sprints.length > 1 ? "s" : ""}`}
@@ -174,7 +205,7 @@ export default function SettingsPage() {
         </ul>
       </GlassCard>
 
-      <GlassCard className="p-5">
+      <GlassCard className="p-5" data-tour="settings-data">
         <CardHeader title="Data" subtitle="Stored in this browser (localStorage). Export regularly to keep a backup." icon={Database} />
         <div className="mt-4 flex flex-wrap gap-2">
           <Button onClick={exportData}><Download className="size-4" /> Export JSON</Button>

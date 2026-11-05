@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState, useSyncExternalStore } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { tourForPath } from "@/lib/tours";
 import Link from "next/link";
-import { AlertTriangle, Ban, Bell, LogOut, CalendarClock, Menu, Monitor, Moon, Search, Settings, Sparkles, Sun } from "lucide-react";
+import { AlertTriangle, Ban, Bell, CircleHelp, LogOut, CalendarClock, Menu, Monitor, Moon, Search, Settings, Sparkles, Sun } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useAuth, useLogout } from "@/lib/auth";
 import { useUI } from "@/lib/ui-store";
@@ -13,6 +14,25 @@ import { cn, daysDiff, fmtDate, today } from "@/lib/utils";
 import { Popover } from "@/components/ui/popover";
 
 const SEEN_KEY = "cali-task:seen-notifications";
+
+/** Replays the current page's guided tour. */
+function HelpButton() {
+  const pathname = usePathname();
+  const startTour = useUI((s) => s.startTour);
+  const id = tourForPath(pathname);
+  if (!id) return null;
+  return (
+    <button
+      onClick={() => startTour(id)}
+      data-tour="help"
+      className="glass-soft grid size-10 place-items-center rounded-2xl text-fg-2 transition hover:text-fg"
+      aria-label="Show me around this page"
+      title="Page tour"
+    >
+      <CircleHelp className="size-[18px]" />
+    </button>
+  );
+}
 
 function readSeen(): string[] {
   try {
@@ -312,6 +332,7 @@ export function Topbar() {
         className="glass-soft grid size-10 place-items-center rounded-2xl lg:hidden"
         onClick={() => setMobileNav(true)}
         aria-label="Open navigation"
+        data-tour="nav-mobile"
       >
         <Menu className="size-5" />
       </button>
@@ -335,6 +356,7 @@ export function Topbar() {
           <Sun className="hidden size-[18px] dark:block" />
           <Moon className="size-[18px] dark:hidden" />
         </button>
+        <HelpButton />
         <Notifications />
         <Popover
           className="w-64"

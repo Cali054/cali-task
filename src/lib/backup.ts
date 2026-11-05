@@ -117,7 +117,18 @@ export function parseBackup(raw: unknown, currentUserName: string): AppData {
       tasks,
       activity,
       activeSprintId: sprintIds.has(raw.activeSprintId as string) ? (raw.activeSprintId as string) : sprints[0].id,
-      settings: { userName: str(settings.userName, 80) || currentUserName, showIntro: true },
+      settings: {
+        userName: str(settings.userName, 80) || currentUserName,
+        showIntro: true,
+        tours: isObj(settings.tours)
+          ? {
+              auto: settings.tours.auto === true,
+              seen: Array.isArray(settings.tours.seen)
+                ? settings.tours.seen.filter((x): x is string => typeof x === "string").slice(0, 20)
+                : [],
+            }
+          : undefined,
+      },
     };
   } catch (e) {
     if (e instanceof BackupError) throw e;

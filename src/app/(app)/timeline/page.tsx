@@ -44,7 +44,7 @@ export default function TimelinePage() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-tour="timeline-summary">
         {[
           { icon: Hourglass, label: "Estimated remaining", value: fmtDays(m.remaining), color: "var(--st-retest)", p: 1 - m.remaining / effortTotal },
           { icon: Timer, label: "Actual time spent", value: fmtDays(m.actualTotal), color: "var(--series-2)", p: m.actualTotal / effortTotal },
@@ -61,7 +61,7 @@ export default function TimelinePage() {
         ))}
       </div>
 
-      <GlassCard className="p-5">
+      <GlassCard className="p-5" data-tour="timeline-chart">
         <CardHeader
           title="Sprint timeline"
           subtitle={`${m.sprintDays} working days · ${m.sprintDaysLeft} left`}
@@ -213,7 +213,7 @@ export default function TimelinePage() {
         )}
       </GlassCard>
 
-      <GlassCard className="p-5">
+      <GlassCard className="p-5" data-tour="timeline-variance">
         <CardHeader title="Estimated vs. actual by task" subtitle="Bars over 100% mean the task took longer than planned" icon={Timer} />
         <ul className="mt-4 space-y-3">
           {rows.map((t) => {

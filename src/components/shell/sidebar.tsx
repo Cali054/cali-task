@@ -80,6 +80,7 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
   const logout = useLogout();
   return (
     <aside
+      data-tour="nav"
       className={cn(
         "glass hidden shrink-0 flex-col rounded-[28px] p-3 transition-[width] duration-300 ease-out lg:flex",
         collapsed ? "w-[76px]" : "w-[248px]",

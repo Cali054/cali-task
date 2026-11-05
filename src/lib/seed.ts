@@ -127,6 +127,7 @@ export function buildEmptyWorkspace(userName = "Cali"): AppData {
     ],
     tasks: [],
     activity: [{ id: uid(), at: now, taskId: null, kind: "sprint", message: "Workspace created" }],
-    settings: { userName, showIntro: true },
+    // New accounts get the guided tours.
+    settings: { userName, showIntro: true, tours: { auto: true, seen: [] } },
   };
 }

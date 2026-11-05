@@ -152,7 +152,7 @@ export default function BoardPage() {
       <PageHeader
         title="Sprint Board"
         subtitle={`${sprint?.name} · drag cards between columns to update their status`}
-        actions={<Button variant="primary" onClick={() => openNewTask()}><Plus className="size-4" /> New task</Button>}
+        actions={<Button variant="primary" onClick={() => openNewTask()} data-tour="board-new"><Plus className="size-4" /> New task</Button>}
       />
       <DndContext
         sensors={sensors}
@@ -160,7 +160,7 @@ export default function BoardPage() {
         onDragEnd={onDragEnd}
         onDragCancel={() => setActiveId(null)}
       >
-        <div className="scroll-thin -mx-1 flex gap-3 overflow-x-auto px-1 pb-3 2xl:grid 2xl:grid-cols-6 2xl:overflow-visible">
+        <div className="scroll-thin -mx-1 flex gap-3 overflow-x-auto px-1 pb-3 2xl:grid 2xl:grid-cols-6 2xl:overflow-visible" data-tour="board-columns">
           {STATUSES.map((s) => <Column key={s} status={s} tasks={byStatus(s)} />)}
         </div>
         <DragOverlay dropAnimation={{ duration: 220, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }}>

@@ -114,7 +114,7 @@ export default function OverviewPage() {
     <div className="space-y-5">
       {/* Hero: sprint summary + quick actions */}
       <div className="grid gap-5 xl:grid-cols-[1.6fr_1fr]">
-        <motion.div custom={0} variants={fadeUp} initial="hidden" animate="show">
+        <motion.div custom={0} variants={fadeUp} initial="hidden" animate="show" data-tour="sprint-hero">
           <GlassCard className="relative h-full overflow-hidden p-5 sm:p-6">
             <div className="pointer-events-none absolute -right-16 -top-20 size-64 rounded-full bg-[radial-gradient(circle,var(--orb-b),transparent_70%)] blur-2xl" />
             <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center">
@@ -152,7 +152,7 @@ export default function OverviewPage() {
           </GlassCard>
         </motion.div>
 
-        <motion.div custom={1} variants={fadeUp} initial="hidden" animate="show">
+        <motion.div custom={1} variants={fadeUp} initial="hidden" animate="show" data-tour="quick-actions">
           <GlassCard className="h-full p-5">
             <CardHeader title="Quick actions" subtitle="Jump straight into the work" icon={Layers} />
             <div className="mt-4 grid grid-cols-2 gap-2">
@@ -179,7 +179,7 @@ export default function OverviewPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 2xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 2xl:grid-cols-6" data-tour="stats">
         <StatCard i={2} icon={Layers} label="Total Tasks" value={m.total} sub={`${m.todo} still to start`} progress={1} color="var(--accent)" href="/tasks" />
         <StatCard i={3} icon={CheckCircle2} label="Completed" value={m.completed} sub={`${m.total ? Math.round((m.completed / m.total) * 100) : 0}% of tasks`} progress={m.total ? m.completed / m.total : 0} color="var(--st-done)" href="/tasks" />
         <StatCard i={4} icon={Loader} label="In Progress" value={m.inProgress} sub={`${m.inReview} in retest/testing`} progress={m.total ? (m.inProgress + m.inReview) / m.total : 0} color="var(--st-progress)" href="/board" />
@@ -190,7 +190,7 @@ export default function OverviewPage() {
 
       <div className="grid gap-5 xl:grid-cols-3">
         {/* Blocked panel */}
-        <motion.div custom={8} variants={fadeUp} initial="hidden" animate="show" className="xl:col-span-2">
+        <motion.div custom={8} variants={fadeUp} initial="hidden" animate="show" className="xl:col-span-2" data-tour="blocked-panel">
           <GlassCard className={`h-full p-5 ${blocked.length ? "ring-1 ring-st-blocked/30" : ""}`}>
             <CardHeader
               title="Blocked tasks"
@@ -236,7 +236,7 @@ export default function OverviewPage() {
         </motion.div>
 
         {/* Planning check */}
-        <motion.div custom={9} variants={fadeUp} initial="hidden" animate="show">
+        <motion.div custom={9} variants={fadeUp} initial="hidden" animate="show" data-tour="planning">
           <GlassCard className="h-full p-5">
             <CardHeader title="Planning check" subtitle="Committed target vs. task estimates" icon={Scale} />
             <div className="mt-4 grid grid-cols-2 gap-3">

@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import type { Status } from "./types";
+import type { TourId } from "./tours";
 
 /** Transient UI state: which dialogs are open, global search text. */
 interface UIState {
@@ -15,6 +16,8 @@ interface UIState {
   /** Bumped on every dialog open so dialog forms remount with fresh state. */
   session: number;
   intro: "pending" | "show" | "done";
+  /** The guided tour currently running, if any. */
+  tour: { id: TourId; step: number } | null;
 
   openNewTask: (defaultStatus?: Status) => void;
   openEditTask: (id: string) => void;
@@ -28,6 +31,9 @@ interface UIState {
   setSearch: (q: string) => void;
   setMobileNav: (v: boolean) => void;
   setIntro: (v: "show" | "done") => void;
+  startTour: (id: TourId) => void;
+  setTourStep: (step: number) => void;
+  endTour: () => void;
 }
 
 export const useUI = create<UIState>()((set) => ({
@@ -40,6 +46,7 @@ export const useUI = create<UIState>()((set) => ({
   mobileNav: false,
   session: 0,
   intro: "pending",
+  tour: null,
 
   openNewTask: (defaultStatus) =>
     set((s) => ({ taskForm: { open: true, editId: null, defaultStatus }, session: s.session + 1 })),
@@ -57,4 +64,7 @@ export const useUI = create<UIState>()((set) => ({
   setSearch: (q) => set({ search: q }),
   setMobileNav: (v) => set({ mobileNav: v }),
   setIntro: (v) => set({ intro: v }),
+  startTour: (id) => set({ tour: { id, step: 0 }, mobileNav: false }),
+  setTourStep: (step) => set((s) => (s.tour ? { tour: { ...s.tour, step } } : {})),
+  endTour: () => set({ tour: null }),
 }));

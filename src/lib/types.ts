@@ -86,9 +86,18 @@ export interface Activity {
   message: string;
 }
 
+export interface TourSettings {
+  /** Start a page's tour automatically the first time it's opened. */
+  auto: boolean;
+  /** Tour ids already completed or skipped. */
+  seen: string[];
+}
+
 export interface Settings {
   userName: string;
   showIntro: boolean;
+  /** Absent on workspaces created before tours existed (tours stay off for them). */
+  tours?: TourSettings;
 }
 
 export interface AppData {

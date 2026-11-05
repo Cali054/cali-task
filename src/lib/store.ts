@@ -16,6 +16,7 @@ import type {
 } from "./types";
 import { today, uid } from "./utils";
 import { STATUS_META } from "./meta";
+import { TOUR_IDS } from "./tours";
 
 interface Actions {
   addTask: (input: TaskInput) => Task;
@@ -33,6 +34,10 @@ interface Actions {
   setActiveSprint: (id: string) => void;
 
   updateSettings: (patch: Partial<Settings>) => void;
+  markTourSeen: (id: string) => void;
+  markAllToursSeen: () => void;
+  restartTours: () => void;
+  setAutoTours: (auto: boolean) => void;
   importData: (data: AppData) => void;
   /** Clears the workspace back to one empty sprint. */
   resetData: () => void;
@@ -234,6 +239,18 @@ export const useStore = create<Store>()(
 
       updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
 
+      markTourSeen: (id) =>
+        set((s) => {
+          const tours = s.settings.tours ?? { auto: false, seen: [] };
+          if (tours.seen.includes(id)) return {};
+          return { settings: { ...s.settings, tours: { ...tours, seen: [...tours.seen, id] } } };
+        }),
+      markAllToursSeen: () =>
+        set((s) => ({ settings: { ...s.settings, tours: { auto: s.settings.tours?.auto ?? false, seen: [...TOUR_IDS] } } })),
+      restartTours: () => set((s) => ({ settings: { ...s.settings, tours: { auto: true, seen: [] } } })),
+      setAutoTours: (auto) =>
+        set((s) => ({ settings: { ...s.settings, tours: { seen: s.settings.tours?.seen ?? [], auto } } })),
+
       importData: (data) =>
         set({
           tasks: data.tasks,
@@ -243,7 +260,7 @@ export const useStore = create<Store>()(
           settings: data.settings,
         }),
 
-      resetData: () => set((s) => ({ ...buildEmptyWorkspace(s.settings.userName) })),
+      resetData: () => set((s) => ({ ...buildEmptyWorkspace(s.settings.userName), settings: s.settings })),
 
       loadSampleData: () => set((s) => ({ ...buildSeed(), settings: s.settings })),
     }),

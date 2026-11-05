@@ -69,12 +69,12 @@ export default function TasksPage() {
         actions={
           <>
             <Button onClick={() => openProgress()}><Timer className="size-4" /> Log time</Button>
-            <Button variant="primary" onClick={() => openNewTask()}><Plus className="size-4" /> New task</Button>
+            <Button variant="primary" onClick={() => openNewTask()} data-tour="tasks-new"><Plus className="size-4" /> New task</Button>
           </>
         }
       />
 
-      <GlassCard className="mb-4 flex flex-wrap items-center gap-2 p-3">
+      <GlassCard className="mb-4 flex flex-wrap items-center gap-2 p-3" data-tour="tasks-filters">
         <div className="glass-soft flex h-10 min-w-48 flex-1 items-center gap-2 rounded-2xl px-3">
           <Search className="size-4 text-fg-3" />
           <input
@@ -128,7 +128,7 @@ export default function TasksPage() {
         )}
       </GlassCard>
 
-      <GlassCard className="overflow-hidden">
+      <GlassCard className="overflow-hidden" data-tour="tasks-list">
         {list.length === 0 ? (
           <EmptyState
             icon={ListTodo}

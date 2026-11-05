@@ -14,6 +14,7 @@ import { TaskDetailDialog } from "@/components/dialogs/task-detail-dialog";
 import { BlockerDialog } from "@/components/dialogs/blocker-dialog";
 import { ProgressDialog } from "@/components/dialogs/progress-dialog";
 import { SprintDialog } from "@/components/dialogs/sprint-dialog";
+import { TourController } from "@/components/tour/tour-controller";
 
 const SIDEBAR_KEY = "cali-task:sidebar-collapsed";
 
@@ -150,6 +151,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <BlockerDialog />
           <ProgressDialog />
           <SprintDialog />
+          <TourController ready={ready} />
         </>
       )}
     </>

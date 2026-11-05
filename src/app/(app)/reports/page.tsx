@@ -59,7 +59,7 @@ export default function ReportsPage() {
     <div className="space-y-5">
       <PageHeader title="Reports" subtitle={`${sprint.name} · ${fmtDate(sprint.startDate)} – ${fmtDate(sprint.endDate)}`} />
 
-      <div className="grid gap-4 lg:grid-cols-[auto_1fr]">
+      <div className="grid gap-4 lg:grid-cols-[auto_1fr]" data-tour="reports-kpis">
         <GlassCard className="flex items-center justify-center p-6">
           <Ring value={m.completionRate} size={156} stroke={12} label="sprint complete" />
         </GlassCard>
@@ -76,8 +76,17 @@ export default function ReportsPage() {
       </div>
 
       <div className="grid gap-5 xl:grid-cols-2">
-        <GlassCard className="p-5">
-          <CardHeader title="Sprint burndown" subtitle="Remaining estimated effort (days)" icon={TrendingDown} action={<TableToggle on={!!tables.bd} onToggle={() => toggle("bd")} />} />
+        <GlassCard className="p-5" data-tour="reports-burndown">
+          <CardHeader
+            title="Sprint burndown"
+            subtitle="Remaining estimated effort (days)"
+            icon={TrendingDown}
+            action={
+              <span data-tour="reports-table">
+                <TableToggle on={!!tables.bd} onToggle={() => toggle("bd")} />
+              </span>
+            }
+          />
           <div className="mt-4">
             {tables.bd ? (
               <DataTable cols={["Day", "Ideal", "Actual"]} rows={bd.map((r) => [r.date === "Start" ? "Start" : fmtDate(r.date), r.ideal, r.remaining ?? "—"])} />
