@@ -10,7 +10,7 @@ export function GlassCard({
   as: Tag = "div",
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & { as?: "div" | "section" | "article" }) {
-  return <Tag className={cn("glass rounded-[24px]", className)} {...props} />;
+  return <Tag className={cn("glass min-w-0 rounded-[24px]", className)} {...props} />;
 }
 
 export function CardHeader({

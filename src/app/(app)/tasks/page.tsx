@@ -138,8 +138,8 @@ export default function TasksPage() {
           />
         ) : (
           <>
-            {/* Table on md+ */}
-            <div className="scroll-thin hidden overflow-x-auto md:block">
+            {/* Table on wide screens */}
+            <div className="scroll-thin hidden overflow-x-auto xl:block">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-[11px] uppercase tracking-wider text-fg-3">
@@ -205,8 +205,8 @@ export default function TasksPage() {
               </table>
             </div>
 
-            {/* Cards on mobile */}
-            <ul className="divide-y divide-[var(--glass-line)] md:hidden">
+            {/* Cards on phones, tablets and small laptops */}
+            <ul className="divide-y divide-[var(--glass-line)] xl:hidden">
               {list.map((t) => (
                 <li key={t.id} className="p-3">
                   <button className="w-full text-left" onClick={() => openDetail(t.id)}>

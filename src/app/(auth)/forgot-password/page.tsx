@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowLeft, AtSign, CheckCircle2, KeyRound, Lock, Mail } from "lucide-react";
-import { AuthError, EMAIL_RE, authAdapter, passwordStrength } from "@/lib/auth";
+import { AuthError, EMAIL_RE, authAdapter, passwordStrength, LIMITS } from "@/lib/auth";
 import { AuthInput, AuthScreen, FormAlert, PasswordInput, SubmitButton } from "@/components/auth/auth-ui";
 
 /**
@@ -69,10 +69,10 @@ export default function ForgotPasswordPage() {
       ) : (
         <form onSubmit={submit} noValidate className="space-y-4">
           {error && <FormAlert>{error}</FormAlert>}
-          <AuthInput label="Email address" name="email" type="email" icon={Mail} autoComplete="email" value={v.email} onChange={set("email")} onBlur={blur("email")} error={err("email")} autoFocus />
-          <AuthInput label="Username" name="username" icon={AtSign} autoComplete="username" value={v.username} onChange={set("username")} onBlur={blur("username")} error={err("username")} />
-          <PasswordInput label="New password" name="password" icon={Lock} autoComplete="new-password" value={v.password} onChange={set("password")} onBlur={blur("password")} error={err("password")} />
-          <PasswordInput label="Confirm new password" name="confirm" icon={Lock} autoComplete="new-password" value={v.confirm} onChange={set("confirm")} onBlur={blur("confirm")} error={err("confirm")} />
+          <AuthInput label="Email address" name="email" maxLength={LIMITS.email} type="email" icon={Mail} autoComplete="email" value={v.email} onChange={set("email")} onBlur={blur("email")} error={err("email")} autoFocus />
+          <AuthInput label="Username" name="username" maxLength={LIMITS.username} icon={AtSign} autoComplete="username" value={v.username} onChange={set("username")} onBlur={blur("username")} error={err("username")} />
+          <PasswordInput label="New password" name="password" maxLength={LIMITS.password} icon={Lock} autoComplete="new-password" value={v.password} onChange={set("password")} onBlur={blur("password")} error={err("password")} />
+          <PasswordInput label="Confirm new password" name="confirm" maxLength={LIMITS.password} icon={Lock} autoComplete="new-password" value={v.confirm} onChange={set("confirm")} onBlur={blur("confirm")} error={err("confirm")} />
           <SubmitButton loading={loading}>
             <KeyRound className="size-4" /> Update password
           </SubmitButton>

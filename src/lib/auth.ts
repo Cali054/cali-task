@@ -37,10 +37,19 @@ interface StoredUser extends User {
 interface Session {
   userId: string;
   at: string;
+  expiresAt: string;
 }
 
 const USERS_KEY = "cali-task:users";
 const SESSION_KEY = "cali-task:session";
+const ATTEMPTS_KEY = "cali-task:auth-attempts";
+
+/** "Remember me" keeps you signed in for 30 days; otherwise until the tab closes (max 12h). */
+const REMEMBER_MS = 30 * 24 * 60 * 60 * 1000;
+const SESSION_MS = 12 * 60 * 60 * 1000;
+
+/** Input limits — also stop absurdly long strings from being hashed. */
+export const LIMITS = { name: 80, email: 254, username: 24, password: 128 } as const;
 
 /* ---------- crypto ---------- */
 
@@ -61,6 +70,62 @@ function newSalt() {
   return toHex(crypto.getRandomValues(new Uint8Array(16)).buffer);
 }
 
+/** Constant-length comparison so a mismatch doesn't return early. */
+function safeEqual(a: string, b: string) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+/* ---------- attempt throttling ---------- */
+
+// After 5 failures for the same account, lock it for 30s, doubling each time
+// (max 15 min). A real backend must enforce this server-side as well.
+const FREE_ATTEMPTS = 5;
+const BASE_LOCK_MS = 30_000;
+const MAX_LOCK_MS = 15 * 60_000;
+
+type Attempts = Record<string, { fails: number; lockedUntil: number }>;
+
+function readAttempts(): Attempts {
+  try {
+    return JSON.parse(localStorage.getItem(ATTEMPTS_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+function writeAttempts(a: Attempts) {
+  try {
+    localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(a));
+  } catch {}
+}
+function assertNotLocked(key: string) {
+  const rec = readAttempts()[key];
+  if (rec && rec.lockedUntil > Date.now()) {
+    const secs = Math.ceil((rec.lockedUntil - Date.now()) / 1000);
+    throw new AuthError(
+      `Too many attempts. Try again in ${secs < 60 ? `${secs} seconds` : `${Math.ceil(secs / 60)} minutes`}.`,
+    );
+  }
+}
+function recordFailure(key: string) {
+  const all = readAttempts();
+  const rec = all[key] ?? { fails: 0, lockedUntil: 0 };
+  rec.fails += 1;
+  if (rec.fails >= FREE_ATTEMPTS) {
+    const over = rec.fails - FREE_ATTEMPTS;
+    rec.lockedUntil = Date.now() + Math.min(MAX_LOCK_MS, BASE_LOCK_MS * 2 ** over);
+  }
+  all[key] = rec;
+  writeAttempts(all);
+}
+function clearFailures(key: string) {
+  const all = readAttempts();
+  delete all[key];
+  writeAttempts(all);
+}
+
 /* ---------- storage ---------- */
 
 function readUsers(): StoredUser[] {
@@ -76,10 +141,27 @@ function writeUsers(users: StoredUser[]) {
 function readSession(): Session | null {
   try {
     const raw = localStorage.getItem(SESSION_KEY) ?? sessionStorage.getItem(SESSION_KEY);
-    return raw ? JSON.parse(raw) : null;
+    const s: Session | null = raw ? JSON.parse(raw) : null;
+    // Sessions without an expiry (older builds) or past it are treated as signed out.
+    if (!s || !s.expiresAt || Date.parse(s.expiresAt) < Date.now()) {
+      if (s) writeSession(null);
+      return null;
+    }
+    return s;
   } catch {
     return null;
   }
+}
+function startSession(userId: string, remember: boolean) {
+  const now = Date.now();
+  writeSession(
+    {
+      userId,
+      at: new Date(now).toISOString(),
+      expiresAt: new Date(now + (remember ? REMEMBER_MS : SESSION_MS)).toISOString(),
+    },
+    remember,
+  );
 }
 function writeSession(s: Session | null, remember = false) {
   try {
@@ -107,6 +189,7 @@ export class AuthError extends Error {
 }
 
 const norm = (s: string) => s.trim().toLowerCase();
+const DUMMY_SALT = "00000000000000000000000000000000";
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export const authAdapter = {
@@ -117,17 +200,32 @@ export const authAdapter = {
   },
 
   async signIn(identifier: string, password: string, remember: boolean): Promise<User> {
-    await wait(450); // keep timing similar whether or not the account exists
-    const id = norm(identifier);
+    const id = norm(identifier).slice(0, LIMITS.email);
+    const key = `login:${id}`;
+    assertNotLocked(key);
+    await wait(300);
     const u = readUsers().find((x) => x.email === id || x.username === id);
-    if (!u || (await hashPassword(password, u.salt)) !== u.passwordHash)
+    // Always run the hash so a missing account takes as long as a wrong password.
+    const hash = await hashPassword(password.slice(0, LIMITS.password), u?.salt ?? DUMMY_SALT);
+    if (!u || !safeEqual(hash, u.passwordHash)) {
+      recordFailure(key);
       throw new AuthError("Incorrect email/username or password.");
-    writeSession({ userId: u.id, at: new Date().toISOString() }, remember);
+    }
+    clearFailures(key);
+    startSession(u.id, remember);
     return publicUser(u);
   },
 
   async signUp(input: { fullName: string; email: string; username: string; password: string }): Promise<User> {
     await wait(450);
+    if (
+      input.fullName.trim().length > LIMITS.name ||
+      !EMAIL_RE.test(input.email.trim()) ||
+      !USERNAME_RE.test(input.username.trim()) ||
+      input.password.length < 8 ||
+      input.password.length > LIMITS.password
+    )
+      throw new AuthError("Please check your details and try again.");
     const users = readUsers();
     const email = norm(input.email);
     const username = norm(input.username);
@@ -147,7 +245,7 @@ export const authAdapter = {
       passwordHash: await hashPassword(input.password, salt),
     };
     writeUsers([...users, user]);
-    writeSession({ userId: user.id, at: now }, true);
+    startSession(user.id, true);
     return publicUser(user);
   },
 
@@ -156,10 +254,16 @@ export const authAdapter = {
    * email AND username. Replace with a token-by-email flow on a real backend.
    */
   async resetPassword(email: string, username: string, newPassword: string) {
+    const key = `reset:${norm(email)}`;
+    assertNotLocked(key);
     await wait(450);
     const users = readUsers();
     const i = users.findIndex((x) => x.email === norm(email) && x.username === norm(username));
-    if (i < 0) throw new AuthError("No account matches that email and username.");
+    if (i < 0) {
+      recordFailure(key);
+      throw new AuthError("No account matches that email and username.");
+    }
+    clearFailures(key);
     const salt = newSalt();
     users[i] = { ...users[i], salt, passwordHash: await hashPassword(newPassword, salt) };
     writeUsers(users);
@@ -226,7 +330,7 @@ export function useLogout() {
 
 /* ---------- validation & password strength ---------- */
 
-export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+export const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]+\.[^\s@]{2,}$/;
 export const USERNAME_RE = /^[a-zA-Z0-9_.]{3,24}$/;
 
 export function passwordStrength(pw: string) {

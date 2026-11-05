@@ -5,6 +5,7 @@ import { Database, Download, FlaskConical, ShieldCheck, Palette, Pencil, Plus, R
 import { useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-store";
 import type { AppData } from "@/lib/types";
+import { MAX_BACKUP_BYTES, parseBackup } from "@/lib/backup";
 import { fmtDate, fmtDateTime, today } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { getShowIntro, setShowIntro } from "@/lib/prefs";
@@ -46,10 +47,14 @@ export default function SettingsPage() {
 
   async function importData(file: File) {
     try {
-      const data = JSON.parse(await file.text()) as AppData;
-      if (!Array.isArray(data.tasks) || !Array.isArray(data.sprints) || !data.sprints.length || !data.settings)
-        throw new Error("File doesn't look like a Cali's Task backup.");
-      if (!data.sprints.some((s) => s.id === data.activeSprintId)) data.activeSprintId = data.sprints[0].id;
+      if (file.size > MAX_BACKUP_BYTES) throw new Error("That file is too large to be a backup (max 5 MB).");
+      let raw: unknown;
+      try {
+        raw = JSON.parse(await file.text());
+      } catch {
+        throw new Error("That file isn't valid JSON.");
+      }
+      const data = parseBackup(raw, store.settings.userName);
       store.importData(data);
       setName(data.settings.userName);
       setMessage({ tone: "ok", text: `Imported ${data.tasks.length} tasks and ${data.sprints.length} sprints.` });

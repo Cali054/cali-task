@@ -321,7 +321,7 @@ export function Topbar() {
         </h2>
         <p className="truncate text-xs text-fg-3">{dateLabel}</p>
       </div>
-      <div className="order-last flex w-full items-center gap-2 md:order-none md:w-auto md:flex-1 md:justify-end">
+      <div className="order-last flex w-full items-center gap-2 xl:order-none xl:w-auto xl:flex-1 xl:justify-end">
         <GlobalSearch />
         <SprintSelect />
       </div>

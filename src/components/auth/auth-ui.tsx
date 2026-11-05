@@ -94,7 +94,7 @@ export function AuthScreen({
   const visible = intro === "done" && status !== "loading" && !redirecting;
 
   return (
-    <div className="relative grid min-h-dvh place-items-center px-4 py-10">
+    <div className="relative grid min-h-dvh place-items-center overflow-x-clip px-4 py-10">
       <FloatingGlass />
       <ThemeToggle />
       <AnimatePresence>

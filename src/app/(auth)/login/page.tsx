@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Lock, UserRound } from "lucide-react";
-import { AuthError, useAuth } from "@/lib/auth";
+import { AuthError, useAuth, LIMITS } from "@/lib/auth";
 import { AuthInput, AuthScreen, FormAlert, GlassCheckbox, PasswordInput, SubmitButton } from "@/components/auth/auth-ui";
 
 export default function LoginPage() {
@@ -59,6 +59,7 @@ export default function LoginPage() {
         <AuthInput
           label="Email or username"
           name="identifier"
+          maxLength={LIMITS.email}
           icon={UserRound}
           autoComplete="username"
           placeholder="you@example.com"
@@ -71,6 +72,7 @@ export default function LoginPage() {
         <PasswordInput
           label="Password"
           name="password"
+          maxLength={LIMITS.password}
           icon={Lock}
           autoComplete="current-password"
           placeholder="••••••••"

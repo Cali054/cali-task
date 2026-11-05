@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { AtSign, CheckCircle2, Circle, Lock, Mail, Sparkles, UserRound } from "lucide-react";
-import { AuthError, EMAIL_RE, USERNAME_RE, authAdapter, passwordStrength, useAuth } from "@/lib/auth";
+import { AuthError, EMAIL_RE, USERNAME_RE, authAdapter, passwordStrength, useAuth, LIMITS } from "@/lib/auth";
 import { PRIVACY_POLICY, TERMS, type LegalDoc } from "@/lib/legal";
 import { AuthInput, AuthScreen, FormAlert, GlassCheckbox, PasswordInput, SubmitButton } from "@/components/auth/auth-ui";
 import { LegalModal } from "@/components/legal/legal-doc";
@@ -133,6 +133,7 @@ export default function SignupPage() {
         <AuthInput
           label="Full name"
           name="fullName"
+          maxLength={LIMITS.name}
           icon={UserRound}
           autoComplete="name"
           placeholder="Your full name"
@@ -147,6 +148,7 @@ export default function SignupPage() {
           <AuthInput
             label="Email address"
             name="email"
+            maxLength={LIMITS.email}
             type="email"
             icon={Mail}
             autoComplete="email"
@@ -160,6 +162,7 @@ export default function SignupPage() {
           <AuthInput
             label="Username"
             name="username"
+            maxLength={LIMITS.username}
             icon={AtSign}
             autoComplete="username"
             placeholder="cali"
@@ -174,6 +177,7 @@ export default function SignupPage() {
           <PasswordInput
             label="Password"
             name="password"
+            maxLength={LIMITS.password}
             icon={Lock}
             autoComplete="new-password"
             placeholder="At least 8 characters"
@@ -187,6 +191,7 @@ export default function SignupPage() {
         <PasswordInput
           label="Confirm password"
           name="confirm"
+          maxLength={LIMITS.password}
           icon={Lock}
           autoComplete="new-password"
           placeholder="Repeat your password"
