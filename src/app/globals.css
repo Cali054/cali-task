@@ -203,8 +203,26 @@ select.field option { background: var(--bg-3); color: var(--fg); }
 .scroll-thin::-webkit-scrollbar-track { background: transparent; }
 }
 
+/* ---------- Brand ---------- */
+.cali-float { animation: cali-float 4.5s ease-in-out infinite; }
+.cali-glow {
+  background: radial-gradient(closest-side, var(--orb-a), var(--orb-b) 55%, transparent);
+  filter: blur(14px);
+  animation: cali-glow 4.5s ease-in-out infinite;
+}
+.cali-hover { transition: transform 0.25s ease, filter 0.25s ease; }
+.cali-hover:hover {
+  transform: translateY(-1px) scale(1.02);
+  filter: drop-shadow(0 6px 14px color-mix(in srgb, var(--accent) 35%, transparent));
+}
+.cali-loading { animation: cali-appear 0.4s ease-out 0.15s both; }
+@keyframes cali-float { 50% { transform: translateY(-8px); } }
+@keyframes cali-glow { 0%, 100% { opacity: 0.55; } 50% { opacity: 0.9; } }
+@keyframes cali-appear { from { opacity: 0; } }
+
 @media (prefers-reduced-motion: reduce) {
   .app-bg .orb { animation: none; }
+  .cali-float, .cali-glow { animation: none; }
   *, *::before, *::after { transition-duration: 0.01ms !important; }
 }
 

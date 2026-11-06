@@ -4,6 +4,7 @@ import { forwardRef, useEffect, useState, type InputHTMLAttributes, type ReactNo
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { AlertCircle, Check, Eye, EyeOff, Loader2, Moon, Sun, type LucideIcon } from "lucide-react";
+import { CaliLoadingIndicator, CaliLogo } from "@/components/brand/cali-logo";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { useUI } from "@/lib/ui-store";
@@ -116,18 +117,14 @@ export function AuthScreen({
             <div className="absolute -inset-6 -z-10 rounded-[48px] bg-[radial-gradient(closest-side,var(--orb-b),transparent)] opacity-70 blur-2xl" />
             <div className="glass-strong rounded-[28px] p-6 sm:p-8">
               <div className="mb-6 flex flex-col items-center text-center">
-                <motion.span
-                  className="relative mb-4 grid size-14 place-items-center rounded-[18px] accent-gradient shadow-[0_12px_30px_-10px_var(--accent)]"
-                  initial={reduce ? false : { scale: 0.6, rotate: -12 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.15 }}
+                <motion.div
+                  className="mb-5"
+                  initial={reduce ? false : { scale: 0.85, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
                 >
-                  <span className="absolute inset-0 rounded-[18px] bg-[radial-gradient(circle_at_30%_25%,rgba(255,255,255,0.8),transparent_55%)]" />
-                  <span className="relative text-xl font-bold text-white">C</span>
-                </motion.span>
-                <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-fg-3">
-                  Cali&apos;s <span className="text-gradient">Task</span>
-                </p>
+                  <CaliLogo height={72} align="center" tagline priority />
+                </motion.div>
                 <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
                 <p className="mt-1 text-sm text-fg-2">{subtitle}</p>
               </div>
@@ -137,6 +134,7 @@ export function AuthScreen({
           </motion.div>
         )}
       </AnimatePresence>
+      {!visible && intro === "done" && <CaliLoadingIndicator fullscreen />}
     </div>
   );
 }

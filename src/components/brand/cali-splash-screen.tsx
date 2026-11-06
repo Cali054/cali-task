@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo } from "react";
 import { motion, useReducedMotion } from "motion/react";
+import { CaliLogoIcon } from "./cali-logo";
 
 const DURATION_MS = 2300;
 
-/** Full-screen intro: glass orb, title blur-to-focus, tagline, then hands off. */
-export function Intro({ onDone }: { onDone: () => void }) {
+/** Full-screen intro: floating Cali emblem, title blur-to-focus, tagline, then hands off. */
+export function CaliSplashScreen({ onDone }: { onDone: () => void }) {
   const reduce = useReducedMotion();
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export function Intro({ onDone }: { onDone: () => void }) {
         top: (i * 53 + 7) % 100,
         size: 10 + ((i * 29) % 44),
         delay: (i % 6) * 0.12,
-        drift: ((i % 2 ? 1 : -1) * (12 + (i % 4) * 6)),
+        drift: (i % 2 ? 1 : -1) * (12 + (i % 4) * 6),
       })),
     [],
   );
@@ -59,22 +60,12 @@ export function Intro({ onDone }: { onDone: () => void }) {
 
       <div className="relative flex flex-col items-center px-6 text-center">
         <motion.div
-          className="relative mb-8 size-28 sm:size-32"
-          initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: "blur(12px)" }}
+          className="mb-7"
+          initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.7, filter: "blur(12px)" }}
           animate={reduce ? { opacity: 1 } : { opacity: 1, scale: 1, filter: "blur(0px)" }}
           transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }}
         >
-          <div className="absolute inset-[-30%] rounded-full bg-[radial-gradient(circle,var(--orb-b),transparent_65%)] blur-2xl" />
-          <motion.div
-            className="glass absolute inset-0 rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle at 30% 25%, rgba(255,255,255,0.95), rgba(255,255,255,0.15) 35%, transparent 60%), linear-gradient(140deg, var(--accent-3), var(--accent) 50%, var(--accent-2))",
-            }}
-            animate={reduce ? undefined : { rotate: [0, 12, 0] }}
-            transition={{ duration: 2.4, ease: "easeInOut" }}
-          />
-          <div className="absolute inset-[18%] rounded-full border border-white/50" />
+          <CaliLogoIcon size={148} float glow priority />
         </motion.div>
 
         <motion.h1

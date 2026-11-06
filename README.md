@@ -35,6 +35,21 @@ Open http://localhost:3000. Production build: `npm run build && npm start`.
 | `src/components/dialogs` | Task form, task detail, blocker, progress, and sprint modals |
 | `src/app/*` | Pages: Overview, My Tasks, Sprint Board, Timeline, Blocked Tasks, Reports, Settings |
 
+## Brand
+
+The logo lives in `public/brand`, and everything shows it through `src/components/brand`:
+
+| Component | Use |
+|---|---|
+| `CaliLogo` | Emblem + wordmark. Props: `height`, `variant` (`primary`, `mono`), `tone`, `tagline` |
+| `CaliLogoIcon` | Emblem only. Props: `size`, `variant` (`gradient`, `mono`), `float`, `glow` |
+| `CaliSplashScreen` | The intro |
+| `CaliLoadingIndicator` | Loading state |
+
+All assets, including the favicons, are generated from `design/logo/cali-logo-source.webp` by
+`design/logo/build_brand_assets.py`. The source is a raster image, so there's no true SVG logo yet; with a
+vector or higher-resolution original, replace the source (and the coordinates at the top of the script).
+
 ## Accounts & sign-in
 
 On a new browser session the intro plays, then hands off to `/login` (or straight to the dashboard if you

@@ -8,22 +8,14 @@ import { useLogout } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-store";
+import { CaliLogo, CaliLogoIcon } from "@/components/brand/cali-logo";
 import { NAV } from "./nav";
 
 export function Logo({ collapsed }: { collapsed?: boolean }) {
   return (
-    <div className="flex items-center gap-3">
-      <span className="relative grid size-10 shrink-0 place-items-center rounded-2xl accent-gradient shadow-[0_8px_20px_-8px_var(--accent)]">
-        <span className="absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_30%_25%,rgba(255,255,255,0.75),transparent_55%)]" />
-        <span className="relative text-sm font-bold text-white">C</span>
-      </span>
-      {!collapsed && (
-        <div className="leading-tight">
-          <p className="text-[15px] font-semibold tracking-tight">Cali&apos;s Task</p>
-          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-fg-3">Plan · Track · Complete</p>
-        </div>
-      )}
-    </div>
+    <Link href="/" aria-label="Cali's Task overview" className="cali-hover inline-block rounded-2xl">
+      {collapsed ? <CaliLogoIcon size={36} priority /> : <CaliLogo height={46} tagline priority />}
+    </Link>
   );
 }
 

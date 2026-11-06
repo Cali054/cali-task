@@ -5,7 +5,7 @@ import { AnimatePresence } from "motion/react";
 import { useTheme } from "@/lib/theme";
 import { useUI } from "@/lib/ui-store";
 import { getShowIntro, INTRO_SEEN_KEY } from "@/lib/prefs";
-import { Intro } from "./intro";
+import { CaliSplashScreen } from "@/components/brand/cali-splash-screen";
 
 function Background() {
   return (
@@ -45,7 +45,7 @@ export function RootChrome({ children }: { children: ReactNode }) {
   return (
     <>
       <Background />
-      <AnimatePresence>{intro === "show" && <Intro key="intro" onDone={finishIntro} />}</AnimatePresence>
+      <AnimatePresence>{intro === "show" && <CaliSplashScreen key="intro" onDone={finishIntro} />}</AnimatePresence>
       {children}
     </>
   );

@@ -15,6 +15,7 @@ import { BlockerDialog } from "@/components/dialogs/blocker-dialog";
 import { ProgressDialog } from "@/components/dialogs/progress-dialog";
 import { SprintDialog } from "@/components/dialogs/sprint-dialog";
 import { TourController } from "@/components/tour/tour-controller";
+import { CaliLoadingIndicator } from "@/components/brand/cali-logo";
 
 const SIDEBAR_KEY = "cali-task:sidebar-collapsed";
 
@@ -128,6 +129,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <>
+      {!hydrated && intro === "done" && <CaliLoadingIndicator fullscreen />}
       {hydrated && (
         <motion.div
           className="flex min-h-dvh gap-4 p-3 sm:p-4 lg:h-dvh lg:min-h-0"
