@@ -33,7 +33,9 @@ Open http://localhost:3000. Production build: `npm run build && npm start`.
 | `src/lib/metrics.ts` | Sprint metrics, burndown, and daily productivity |
 | `src/components/shell` | Intro, sidebar, mobile drawer, top bar (search, sprint selector, notifications, profile) |
 | `src/components/dialogs` | Task form, task detail, blocker, progress, and sprint modals |
-| `src/app/*` | Pages: Overview, My Tasks, Sprint Board, Timeline, Blocked Tasks, Reports, Settings |
+| `src/app/page.tsx` | Public landing page at `/` (sections in `src/components/landing`) |
+| `src/app/(app)/*` | App pages: Overview (`/dashboard`), My Tasks, Sprint Board, Timeline, Blocked Tasks, Reports, Settings |
+| `src/components/landing` | Landing sections and the app previews they show. Preview data is fixed in `preview-data.ts`; it never reads a real workspace |
 
 ## Brand
 

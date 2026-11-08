@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Cali's Task",
     short_name: "Cali's Task",
     description: "Plan. Track. Complete.",
-    start_url: "/",
+    start_url: "/dashboard",
     display: "standalone",
     background_color: "#eef0ff",
     theme_color: "#4f6bff",

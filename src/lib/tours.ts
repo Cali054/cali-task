@@ -20,7 +20,7 @@ export const TOUR_IDS = ["overview", "tasks", "board", "timeline", "blocked", "r
 export type TourId = (typeof TOUR_IDS)[number];
 
 const ROUTES: Record<string, TourId> = {
-  "/": "overview",
+  "/dashboard": "overview",
   "/tasks": "tasks",
   "/board": "board",
   "/timeline": "timeline",

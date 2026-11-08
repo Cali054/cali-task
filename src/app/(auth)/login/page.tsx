@@ -33,7 +33,7 @@ export default function LoginPage() {
     try {
       await signIn(identifier, password, remember);
       setLeaving(true);
-      setTimeout(() => router.replace("/"), 420);
+      setTimeout(() => router.replace("/dashboard"), 420);
     } catch (err) {
       setError(err instanceof AuthError ? err.message : "Something went wrong. Please try again.");
       setLoading(false);

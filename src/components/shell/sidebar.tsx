@@ -13,7 +13,7 @@ import { NAV } from "./nav";
 
 export function Logo({ collapsed }: { collapsed?: boolean }) {
   return (
-    <Link href="/" aria-label="Cali's Task overview" className="cali-hover inline-block rounded-2xl">
+    <Link href="/dashboard" aria-label="Cali's Task overview" className="cali-hover inline-block rounded-2xl">
       {collapsed ? <CaliLogoIcon size={36} priority /> : <CaliLogo height={46} tagline priority />}
     </Link>
   );
@@ -26,7 +26,7 @@ export function NavList({ collapsed, onNavigate }: { collapsed?: boolean; onNavi
   return (
     <nav className="flex flex-col gap-1" aria-label="Main">
       {NAV.map((item) => {
-        const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+        const active = pathname === item.href || pathname.startsWith(item.href + "/");
         const Icon = item.icon;
         return (
           <Link

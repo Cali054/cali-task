@@ -87,7 +87,7 @@ export function AuthScreen({
       .then(() => {
         if (useAuth.getState().status === "authed") {
           setRedirecting(true);
-          router.replace("/");
+          router.replace("/dashboard");
         }
       });
   }, [router]);

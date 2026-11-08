@@ -146,21 +146,21 @@ body {
   background: var(--glass);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow), var(--glass-highlight);
-  backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
 }
 .glass-strong {
   background: var(--glass-strong);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow), var(--glass-highlight);
-  backdrop-filter: blur(32px) saturate(170%);
   -webkit-backdrop-filter: blur(32px) saturate(170%);
+  backdrop-filter: blur(32px) saturate(170%);
 }
 .glass-soft {
   background: var(--glass-soft);
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
 }
 .glass-hover {
   transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
@@ -220,9 +220,34 @@ select.field option { background: var(--bg-3); color: var(--fg); }
 @keyframes cali-glow { 0%, 100% { opacity: 0.55; } 50% { opacity: 0.9; } }
 @keyframes cali-appear { from { opacity: 0; } }
 
+/* ---------- Landing page ---------- */
+.landing-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.8;
+  animation: drift 20s ease-in-out infinite alternate;
+}
+.landing-float { animation: landing-float 7s ease-in-out infinite; }
+.landing-float-slow { animation: landing-float 10s ease-in-out infinite; }
+@keyframes landing-float { 50% { transform: translateY(-10px); } }
+.landing-pulse-x,
+.landing-pulse-y {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, #fff, var(--accent-3) 60%, transparent);
+  box-shadow: 0 0 12px var(--accent-3);
+}
+.landing-pulse-x { top: -3px; left: 0; width: 8px; height: 8px; animation: pulse-x 3.2s ease-in-out 1.6s infinite; }
+.landing-pulse-y { left: -3px; top: 0; width: 8px; height: 8px; animation: pulse-y 3.2s ease-in-out 1.6s infinite; }
+@keyframes pulse-x { from { left: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } to { left: calc(100% - 8px); opacity: 0; } }
+@keyframes pulse-y { from { top: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } to { top: calc(100% - 8px); opacity: 0; } }
+
 @media (prefers-reduced-motion: reduce) {
   .app-bg .orb { animation: none; }
   .cali-float, .cali-glow { animation: none; }
+  .landing-orb, .landing-float, .landing-float-slow { animation: none; }
+  .landing-pulse-x, .landing-pulse-y { display: none; }
   *, *::before, *::after { transition-duration: 0.01ms !important; }
 }
 

@@ -24,7 +24,7 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
           transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
         >
           <button
-            onClick={() => (window.history.length > 1 ? router.back() : router.push("/login"))}
+            onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}
             className="glass-soft mb-6 inline-flex h-10 items-center gap-2 rounded-2xl px-4 text-sm font-medium text-fg-2 transition hover:text-fg"
           >
             <ArrowLeft className="size-4" /> Back

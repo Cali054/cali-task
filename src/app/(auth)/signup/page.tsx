@@ -98,7 +98,7 @@ export default function SignupPage() {
     try {
       await signUp({ fullName: v.fullName, email: v.email, username: v.username, password: v.password });
       setLeaving(true);
-      setTimeout(() => router.replace("/"), 420);
+      setTimeout(() => router.replace("/dashboard"), 420);
     } catch (e) {
       setServerErr(
         e instanceof AuthError ? { field: e.field, message: e.message } : { message: "Something went wrong. Please try again." },
