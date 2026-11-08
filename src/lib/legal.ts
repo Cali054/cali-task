@@ -2,7 +2,7 @@
  * Privacy Policy and Terms & Conditions content.
  *
  * The text describes how this app actually behaves today (local-first, no
- * servers, no tracking). Update `jurisdiction` before publishing, and bump `version` whenever the documents change — the version
+ * servers, no tracking). Bump `version` whenever the documents change — the version
  * is stored with every user's consent record.
  */
 export const LEGAL = {
@@ -11,7 +11,7 @@ export const LEGAL = {
   effectiveDate: "November 4, 2026",
   owner: "Joshua Luis G. Calilong",
   contactEmail: "calilongjoshualuis@gmail.com",
-  jurisdiction: "the country in which the service owner is established",
+  jurisdiction: "the Republic of the Philippines",
 };
 
 export interface LegalSection {
