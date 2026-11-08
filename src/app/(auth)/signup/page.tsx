@@ -7,7 +7,17 @@ import { motion } from "motion/react";
 import { AtSign, CheckCircle2, Circle, Lock, Mail, Sparkles, UserRound } from "lucide-react";
 import { AuthError, EMAIL_RE, USERNAME_RE, authAdapter, passwordStrength, useAuth, LIMITS } from "@/lib/auth";
 import { PRIVACY_POLICY, TERMS, type LegalDoc } from "@/lib/legal";
-import { AuthInput, AuthScreen, FormAlert, GlassCheckbox, PasswordInput, SubmitButton } from "@/components/auth/auth-ui";
+import {
+  AuthInput,
+  AuthScreen,
+  FormAlert,
+  GlassCheckbox,
+  GoogleButton,
+  GoogleConsentNote,
+  OrDivider,
+  PasswordInput,
+  SubmitButton,
+} from "@/components/auth/auth-ui";
 import { LegalModal } from "@/components/legal/legal-doc";
 
 type FieldKey = "fullName" | "email" | "username" | "password" | "confirm" | "consent";
@@ -128,8 +138,11 @@ export default function SignupPage() {
         </>
       }
     >
+      {serverErr && !serverErr.field && <FormAlert>{serverErr.message}</FormAlert>}
+      <GoogleButton onError={(message) => setServerErr(message ? { message } : null)} disabled={loading || leaving} />
+      <GoogleConsentNote />
+      <OrDivider>or sign up with email</OrDivider>
       <form onSubmit={submit} noValidate className="space-y-4">
-        {serverErr && !serverErr.field && <FormAlert>{serverErr.message}</FormAlert>}
         <AuthInput
           label="Full name"
           name="fullName"

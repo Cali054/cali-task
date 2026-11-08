@@ -5,7 +5,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Lock, UserRound } from "lucide-react";
 import { AuthError, useAuth, LIMITS } from "@/lib/auth";
-import { AuthInput, AuthScreen, FormAlert, GlassCheckbox, PasswordInput, SubmitButton } from "@/components/auth/auth-ui";
+import {
+  AuthInput,
+  AuthScreen,
+  FormAlert,
+  GlassCheckbox,
+  GoogleButton,
+  GoogleConsentNote,
+  OrDivider,
+  PasswordInput,
+  SubmitButton,
+} from "@/components/auth/auth-ui";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -54,8 +64,11 @@ export default function LoginPage() {
         </>
       }
     >
+      {error && <FormAlert>{error}</FormAlert>}
+      <GoogleButton onError={setError} disabled={loading || leaving} />
+      <GoogleConsentNote />
+      <OrDivider>or sign in with email</OrDivider>
       <form onSubmit={submit} noValidate className="space-y-4">
-        {error && <FormAlert>{error}</FormAlert>}
         <AuthInput
           label="Email or username"
           name="identifier"
@@ -95,7 +108,7 @@ export default function LoginPage() {
           </SubmitButton>
         </div>
         <p className="text-center text-[11px] text-fg-3">
-          Your account is stored securely on this device.
+          Email accounts are stored securely on this device. Google accounts sync across devices.
         </p>
       </form>
     </AuthScreen>

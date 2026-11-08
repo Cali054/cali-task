@@ -1,14 +1,15 @@
 /**
  * Privacy Policy and Terms & Conditions content.
  *
- * The text describes how this app actually behaves today (local-first, no
- * servers, no tracking). Bump `version` whenever the documents change — the version
+ * The text describes how this app actually behaves today: email/password
+ * accounts stay on the device; Google accounts are stored with Supabase. No
+ * tracking. Bump `version` whenever the documents change — the version
  * is stored with every user's consent record.
  */
 export const LEGAL = {
   appName: "Cali's Task",
-  version: "2026-11-04",
-  effectiveDate: "November 4, 2026",
+  version: "2026-11-08",
+  effectiveDate: "November 8, 2026",
   owner: "Joshua Luis G. Calilong",
   contactEmail: "calilongjoshualuis@gmail.com",
   jurisdiction: "the Republic of the Philippines",
@@ -48,8 +49,9 @@ export const PRIVACY_POLICY: LegalDoc = {
       body: [
         "We collect only what is needed to run your workspace:",
         [
-          "Account details: your full name, email address and username.",
-          "Credentials: your password, which is never stored in readable form — only a salted, one-way hash (PBKDF2-SHA-256) is kept.",
+          "Account details: your full name, email address and username (email accounts), or your display name.",
+          "Credentials (email accounts): your password, which is never stored in readable form — only a salted, one-way hash (PBKDF2-SHA-256) is kept.",
+          "Google profile (if you continue with Google): your name, email address, profile picture, Google account ID and whether Google has verified your email. We never receive or store your Google password.",
           "Workspace content: tasks, sprints, notes, blockers, time logs and activity history that you enter.",
           "Consent record: the version of these documents you accepted and the date and time you accepted them.",
           "Preferences: theme, sidebar layout and intro-animation settings.",
@@ -74,9 +76,13 @@ export const PRIVACY_POLICY: LegalDoc = {
       id: "storage-and-security",
       title: "Data Storage and Security",
       body: [
-        `In the current version, all account and workspace data is stored locally in your web browser's storage on the device you use. It is not sent to or stored on our servers.`,
-        "Passwords are salted and hashed before they are saved. Anyone with access to your device and browser profile may still be able to access locally stored data, so protect your device with a screen lock and sign out on shared computers.",
-        "If a future version introduces cloud sync, this policy will be updated before any data leaves your device, and you will be asked to accept the new version.",
+        "Where your data is kept depends on how you sign in:",
+        [
+          "Email and password accounts: all account and workspace data is stored locally in your web browser on the device you use. It is not sent to or stored on our servers.",
+          "Google accounts: your profile and workspace are stored in a database hosted by our service provider Supabase, so you can use them on any device, with a copy cached in your browser. Each record is linked to your account, and access rules in the database allow only you, while signed in, to read or change it.",
+        ],
+        "If you continue with Google in a browser that already has an email account with the same email address, that account's workspace is copied to your Google account so you keep a single workspace.",
+        "Data in transit is encrypted with HTTPS. Passwords for email accounts are salted and hashed before they are saved. Anyone with access to your device and browser profile may still be able to access data stored in that browser, so protect your device with a screen lock and sign out on shared computers.",
       ],
     },
     {
@@ -84,7 +90,13 @@ export const PRIVACY_POLICY: LegalDoc = {
       title: "Data Sharing and Disclosure",
       body: [
         "We do not share, sell, rent or trade your personal information with third parties.",
-        "Because data stays on your device, we cannot access or disclose it. If you export a backup file, you are responsible for where you store or send it.",
+        "We use these service providers only to run the app:",
+        [
+          "Google, to confirm your identity when you choose to continue with Google. Google's own privacy policy applies to your Google account.",
+          "Supabase, to host sign-in sessions, profiles and workspaces for Google accounts.",
+          "Vercel, to host the website.",
+        ],
+        "They process data on our behalf and for no other purpose. Data of email accounts stays on your device, so we cannot access or disclose it. If you export a backup file, you are responsible for where you store or send it.",
       ],
     },
     {
@@ -92,7 +104,7 @@ export const PRIVACY_POLICY: LegalDoc = {
       title: "Cookies and Tracking",
       body: [
         `${appName} does not use advertising or analytics cookies, tracking pixels, or third-party trackers.`,
-        "The app uses your browser's local storage and session storage strictly to keep you signed in (when you choose \"Remember me\" or for the current session), save your workspace, and remember your preferences. These are essential for the app to work.",
+        "The app uses your browser's local storage and session storage strictly to keep you signed in (including the secure session token issued when you continue with Google), save your workspace, and remember your preferences. These are essential for the app to work.",
       ],
     },
     {
@@ -105,15 +117,18 @@ export const PRIVACY_POLICY: LegalDoc = {
           "Export your workspace as a JSON file from Settings → Data.",
           "Change your display name in Settings → Profile.",
           "Delete your data by resetting the workspace or clearing this site's data in your browser settings.",
+          "Ask us to delete a Google account's profile and workspace from our database completely.",
         ],
-        `For any other request, contact us at ${contactEmail}.`,
+        `We handle personal information in line with the Data Privacy Act of 2012 (Republic Act No. 10173) of the Philippines. For any other request, including complete deletion of a Google account, contact us at ${contactEmail}.`,
       ],
     },
     {
       id: "retention",
       title: "Data Retention",
       body: [
-        "Your information is kept on your device until you delete it, reset your workspace, or clear your browser's site data. Signing out ends your session but does not delete your workspace.",
+        "Email accounts: your information is kept on your device until you delete it, reset your workspace, or clear your browser's site data.",
+        "Google accounts: your profile and workspace are kept in our database until you ask us to delete them; we then remove them within 30 days. Resetting your workspace in the app replaces the stored copy straight away.",
+        "Signing out ends your session but does not delete your workspace.",
       ],
     },
     {
@@ -149,7 +164,7 @@ export const TERMS: LegalDoc = {
       body: [
         [
           "You must provide accurate information when you register and keep it up to date.",
-          "You are responsible for keeping your password confidential and for all activity under your account.",
+          "You are responsible for keeping your password, or the Google account you sign in with, secure, and for all activity under your account.",
           "You must be at least 13 years old, or the minimum age required in your country, to create an account.",
         ],
       ],

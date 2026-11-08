@@ -54,6 +54,8 @@ vector or higher-resolution original, replace the source (and the coordinates at
 
 ## Accounts & sign-in
 
+**Google sign-in** needs a Supabase project and a Google OAuth client. See [docs/google-sign-in-setup.md](docs/google-sign-in-setup.md). Google accounts store their profile and workspace in Supabase Postgres behind Row Level Security, so they sync across devices. Email/password accounts below stay on the device.
+
 On a new browser session the intro plays, then hands off to `/login` (or straight to the dashboard if you
 chose "Remember me"). Routes:
 
@@ -62,6 +64,7 @@ chose "Remember me"). Routes:
 | `/login` | Email/username + password, show/hide, Remember me, inline validation, error shake |
 | `/signup` | Full name, email, username, password (strength meter) + confirm, required consent checkbox |
 | `/forgot-password` | Resets a password by confirming the account's email **and** username |
+| `/auth/callback` | Finishes **Continue with Google** (Supabase Auth, OAuth PKCE) and opens the dashboard |
 | `/privacy-policy`, `/terms-and-conditions` | Full legal pages; the same text opens in a glass modal during signup |
 
 Accounts are stored in this browser (`cali-task:users`). Passwords are salted and hashed with PBKDF2-SHA-256
@@ -69,11 +72,11 @@ via Web Crypto, never stored in plain text. Each account has its own workspace
 (`cali-task:workspace:<userId>`). At signup the user's consent is recorded with the document version and an
 acceptance timestamp; it's shown in Settings → Profile.
 
-To use a real backend, replace the functions in `authAdapter` (`src/lib/auth.ts`). Swap the reset flow for an
-emailed token there too. There's no Google sign-in button because no OAuth provider is configured yet.
+Email/password accounts could move to Supabase Auth too (`authAdapter` in `src/lib/auth.ts`), which would
+also give them an emailed password-reset link.
 
-**Before you publish:** set `contactEmail` and `jurisdiction` in `src/lib/legal.ts` (they're placeholders),
-and bump `version` whenever you edit the documents.
+**Legal documents:** the owner, contact email and jurisdiction are set in `src/lib/legal.ts`. Bump `version`
+whenever you edit the documents.
 
 ## Persistence
 

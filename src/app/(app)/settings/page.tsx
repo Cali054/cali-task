@@ -1,14 +1,16 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Database, Download, FlaskConical, ShieldCheck, Palette, Pencil, Plus, RotateCcw, Rocket, Sparkles, Trash2, Upload, UserRound } from "lucide-react";
+import { BadgeCheck, Database, Download, FlaskConical, ShieldCheck, Palette, Pencil, Plus, RotateCcw, Rocket, Sparkles, Trash2, Upload, UserRound } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-store";
 import type { AppData } from "@/lib/types";
 import { MAX_BACKUP_BYTES, parseBackup } from "@/lib/backup";
 import { TOUR_IDS } from "@/lib/tours";
 import { fmtDate, fmtDateTime, today } from "@/lib/utils";
-import { useAuth } from "@/lib/auth";
+import { AuthError, authAdapter, useAuth } from "@/lib/auth";
+import { Avatar } from "@/components/shell/topbar";
+import { GoogleMark } from "@/components/auth/auth-ui";
 import { getShowIntro, setShowIntro } from "@/lib/prefs";
 import Link from "next/link";
 import { Button, CardHeader, Field, GlassCard, PageHeader } from "@/components/ui/glass";
@@ -26,6 +28,7 @@ export default function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const user = useAuth((s) => s.user);
   const [showIntro, setShowIntroState] = useState(getShowIntro);
+  const [savingName, setSavingName] = useState(false);
 
   function exportData() {
     const data: AppData = {
@@ -79,11 +82,30 @@ export default function SettingsPage() {
         <GlassCard className="p-5" data-tour="settings-profile">
           <CardHeader title="Profile" subtitle="Shown in your welcome message" icon={UserRound} />
           {user && (
+            <div className="mt-4 flex items-center gap-3">
+              <Avatar name={store.settings.userName || user.fullName} src={user.avatarUrl} className="size-14 text-lg" />
+              <div className="min-w-0">
+                <p className="truncate font-semibold">{user.fullName}</p>
+                <p className="truncate text-xs text-fg-2">{user.email}</p>
+                <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-fg-3">
+                  {user.provider === "google" ? (
+                    <span className="inline-flex items-center gap-1"><GoogleMark className="size-3" /> Google account · synced</span>
+                  ) : (
+                    <span>Email account · stored on this device</span>
+                  )}
+                  {user.provider === "google" && user.emailVerified && (
+                    <span className="inline-flex items-center gap-1 text-st-done"><BadgeCheck className="size-3" /> Email verified</span>
+                  )}
+                </p>
+              </div>
+            </div>
+          )}
+          {user && (
             <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
               <div className="glass-soft rounded-2xl px-3 py-2.5">
-                <dt className="text-[11px] text-fg-3">Account</dt>
-                <dd className="truncate font-medium">{user.fullName}</dd>
-                <dd className="truncate text-xs text-fg-2">@{user.username} · {user.email}</dd>
+                <dt className="text-[11px] text-fg-3">{user.provider === "google" ? "Signed in with" : "Username"}</dt>
+                <dd className="truncate font-medium">{user.provider === "google" ? "Google" : `@${user.username}`}</dd>
+                <dd className="truncate text-xs text-fg-2">Member since {fmtDate(user.createdAt.slice(0, 10))}</dd>
               </div>
               <div className="glass-soft rounded-2xl px-3 py-2.5">
                 <dt className="flex items-center gap-1 text-[11px] text-fg-3"><ShieldCheck className="size-3" /> Consent recorded</dt>
@@ -97,16 +119,29 @@ export default function SettingsPage() {
           )}
           <form
             className="mt-4 flex items-end gap-2"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              store.updateSettings({ userName: name.trim() || "Cali" });
-              setMessage({ tone: "ok", text: "Profile saved." });
+              const next = name.trim().slice(0, 80) || "Cali";
+              setSavingName(true);
+              try {
+                if (user) {
+                  await authAdapter.updateDisplayName(user, next);
+                  useAuth.getState().setUser({ ...user, displayName: next });
+                }
+                store.updateSettings({ userName: next });
+                setName(next);
+                setMessage({ tone: "ok", text: "Profile saved." });
+              } catch (err) {
+                setMessage({ tone: "err", text: err instanceof AuthError ? err.message : "Couldn't save your profile." });
+              } finally {
+                setSavingName(false);
+              }
             }}
           >
             <Field label="Display name" className="flex-1">
-              <input className="field" value={name} onChange={(e) => setName(e.target.value)} />
+              <input className="field" value={name} maxLength={80} onChange={(e) => setName(e.target.value)} />
             </Field>
-            <Button type="submit" variant="primary">Save</Button>
+            <Button type="submit" variant="primary" disabled={savingName}>{savingName ? "Saving…" : "Save"}</Button>
           </form>
         </GlassCard>
 
@@ -206,7 +241,7 @@ export default function SettingsPage() {
       </GlassCard>
 
       <GlassCard className="p-5" data-tour="settings-data">
-        <CardHeader title="Data" subtitle="Stored in this browser (localStorage). Export regularly to keep a backup." icon={Database} />
+        <CardHeader title="Data" subtitle={user?.provider === "google" ? "Synced to your account and cached in this browser. Export to keep your own backup." : "Stored in this browser (localStorage). Export regularly to keep a backup."} icon={Database} />
         <div className="mt-4 flex flex-wrap gap-2">
           <Button onClick={exportData}><Download className="size-4" /> Export JSON</Button>
           <Button onClick={() => fileRef.current?.click()}><Upload className="size-4" /> Import JSON</Button>

@@ -17,6 +17,8 @@ import type {
 import { today, uid } from "./utils";
 import { STATUS_META } from "./meta";
 import { TOUR_IDS } from "./tours";
+import { cancelCloudSave, loadCloudWorkspace, queueCloudSave } from "./cloud-sync";
+import { authAdapter } from "./auth";
 
 interface Actions {
   addTask: (input: TaskInput) => Task;
@@ -295,27 +297,84 @@ export function useSprintTasks() {
   return tasks.filter((t) => t.sprintId === sprintId);
 }
 
+/** The saved part of the store (same shape as a backup file). */
+function snapshot(s: Store): AppData {
+  return {
+    version: s.version,
+    tasks: s.tasks,
+    sprints: s.sprints,
+    activity: s.activity,
+    activeSprintId: s.activeSprintId,
+    settings: s.settings,
+  };
+}
+const DATA_KEYS = ["tasks", "sprints", "activity", "activeSprintId", "settings"] as const;
+
+let stopSync: (() => void) | null = null;
+
+/** Stops pushing changes to the cloud (sign-out, account switch). */
+export function unbindWorkspaceSync() {
+  stopSync?.();
+  stopSync = null;
+  cancelCloudSave();
+}
+
 /**
  * Points the store at the signed-in user's workspace. Each account gets its
  * own storage key; a workspace saved before accounts existed is handed to the
- * first account that signs in. New accounts start with an empty workspace.
+ * first email/password account that signs in. New accounts start empty.
+ *
+ * Google accounts (`cloud`) also load from and save to Supabase. The cloud
+ * copy wins over this browser's copy. On a first Google sign-in, a local
+ * email/password account with the same email on this device is carried over
+ * instead of starting from scratch, so the person keeps one workspace.
  */
-export async function bindWorkspace(userId: string, displayName: string) {
+export async function bindWorkspace(
+  userId: string,
+  displayName: string,
+  opts: { cloud?: boolean; email?: string } = {},
+) {
+  unbindWorkspaceSync();
   const name = `${STORAGE_KEY}:${userId}`;
   let existing: string | null = null;
+  let uploadFirst = false;
   try {
     existing = localStorage.getItem(name);
     const legacy = localStorage.getItem(STORAGE_KEY);
-    if (!existing && legacy) {
+    if (!opts.cloud && !existing && legacy) {
       localStorage.setItem(name, legacy);
       localStorage.removeItem(STORAGE_KEY);
       existing = legacy;
     }
   } catch {}
+
+  if (opts.cloud) {
+    try {
+      const remote = await loadCloudWorkspace(userId);
+      if (remote) {
+        existing = JSON.stringify({ state: remote, version: remote.version ?? 1 });
+      } else {
+        if (!existing && opts.email) existing = authAdapter.localWorkspaceForEmail(opts.email);
+        uploadFirst = true;
+      }
+      if (existing) localStorage.setItem(name, existing);
+    } catch (e) {
+      // Offline or schema missing: carry on with this browser's copy.
+      console.warn("[sync] Could not load cloud workspace:", e instanceof Error ? e.message : e);
+    }
+  }
+
   useStore.persist.setOptions({ name });
   if (existing) {
     await useStore.persist.rehydrate();
   } else {
     useStore.setState(buildEmptyWorkspace(displayName));
+  }
+
+  if (opts.cloud) {
+    if (uploadFirst) queueCloudSave(userId, snapshot(useStore.getState()));
+    stopSync = useStore.subscribe((s, prev) => {
+      if (DATA_KEYS.some((k) => s[k] !== prev[k])) queueCloudSave(userId, snapshot(s));
+    });
   }
 }

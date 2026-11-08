@@ -4,14 +4,19 @@ import { useRouter } from "next/navigation";
 import { create } from "zustand";
 import { LEGAL } from "./legal";
 import { uid } from "./utils";
+import { flushCloudSave } from "./cloud-sync";
+import { getSupabase, OAUTH_CALLBACK_PATH, PROFILE_COLUMNS, supabaseConfigured, type ProfileRow } from "./supabase";
 
 /**
- * Local-first authentication for the prototype.
+ * Two ways to sign in:
  *
- * Accounts live in this browser's localStorage; passwords are salted and
- * hashed with PBKDF2 (Web Crypto) and never stored in plain text. To move to
- * a real backend, replace the functions in `authAdapter` with API calls —
- * the pages and the store below keep working unchanged.
+ * - Email/password ("password" accounts) live in this browser's localStorage;
+ *   passwords are salted and hashed with PBKDF2 (Web Crypto) and never stored
+ *   in plain text.
+ * - Google ("google" accounts) go through Supabase Auth with the OAuth PKCE
+ *   flow. Supabase issues the session (a short-lived JWT plus a refresh
+ *   token); the profile and workspace live in Postgres behind Row Level
+ *   Security. Cali never sees or stores a Google password.
  */
 
 export interface Consent {
@@ -20,16 +25,26 @@ export interface Consent {
   acceptedAt: string;
 }
 
+export type AuthProvider = "password" | "google";
+
 export interface User {
   id: string;
+  provider: AuthProvider;
   fullName: string;
   email: string;
+  /** Empty for Google accounts. */
   username: string;
   createdAt: string;
   consent: Consent;
+  /** Google accounts only. */
+  avatarUrl?: string | null;
+  emailVerified?: boolean;
+  googleId?: string | null;
+  /** Display name saved in the cloud profile (Google accounts). */
+  displayName?: string | null;
 }
 
-interface StoredUser extends User {
+interface StoredUser extends Omit<User, "provider"> {
   salt: string;
   passwordHash: string;
 }
@@ -172,6 +187,7 @@ function writeSession(s: Session | null, remember = false) {
 }
 const publicUser = (u: StoredUser): User => ({
   id: u.id,
+  provider: "password",
   fullName: u.fullName,
   email: u.email,
   username: u.username,
@@ -192,11 +208,149 @@ const norm = (s: string) => s.trim().toLowerCase();
 const DUMMY_SALT = "00000000000000000000000000000000";
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/* ---------- Google (Supabase Auth) ---------- */
+
+function profileToUser(p: ProfileRow, fallback: { email?: string; name?: string; avatar?: string }): User {
+  const email = p.email ?? fallback.email ?? "";
+  const fullName = p.full_name || fallback.name || email.split("@")[0] || "Cali user";
+  return {
+    id: p.id,
+    provider: "google",
+    fullName,
+    email,
+    username: "",
+    createdAt: p.created_at,
+    consent: {
+      privacyVersion: p.consent_version ?? LEGAL.version,
+      termsVersion: p.consent_version ?? LEGAL.version,
+      acceptedAt: p.consent_at ?? p.created_at,
+    },
+    avatarUrl: p.avatar_url || fallback.avatar || null,
+    emailVerified: p.email_verified,
+    googleId: p.google_id,
+    displayName: p.display_name,
+  };
+}
+
+/** Reads the signed-in Supabase user's profile, or null when signed out. */
+async function currentGoogleUser(): Promise<User | null> {
+  const sb = getSupabase();
+  if (!sb) return null;
+  const { data } = await sb.auth.getSession();
+  const authUser = data.session?.user;
+  if (!authUser) return null;
+  const meta = authUser.user_metadata ?? {};
+  const fallback = {
+    email: authUser.email,
+    name: (meta.full_name ?? meta.name) as string | undefined,
+    avatar: (meta.avatar_url ?? meta.picture) as string | undefined,
+  };
+  const { data: profile, error } = await sb
+    .from("profiles")
+    .select(PROFILE_COLUMNS)
+    .eq("id", authUser.id)
+    .maybeSingle<ProfileRow>();
+  if (profile) return profileToUser(profile, fallback);
+  // No profile row (schema not installed yet, or the trigger failed): still
+  // sign the user in with what Google returned.
+  if (error) console.warn("[auth] Could not load profile:", error.message);
+  return profileToUser(
+    {
+      id: authUser.id,
+      email: authUser.email ?? null,
+      full_name: null,
+      display_name: null,
+      avatar_url: null,
+      google_id: (meta.provider_id ?? meta.sub ?? null) as string | null,
+      email_verified: Boolean(meta.email_verified ?? authUser.email_confirmed_at),
+      consent_version: null,
+      consent_at: null,
+      created_at: authUser.created_at,
+    },
+    fallback,
+  );
+}
+
+/** Turns Supabase/OAuth error text into something a person can act on. */
+function friendlyOAuthError(message: string) {
+  const m = message.toLowerCase();
+  if (m.includes("access_denied") || m.includes("cancel")) return "Google sign-in was cancelled.";
+  if (m.includes("provider is not enabled") || m.includes("unsupported provider"))
+    return "Google sign-in isn't enabled for this app yet.";
+  if (m.includes("code verifier") || m.includes("flow state") || (m.includes("invalid") && m.includes("code")))
+    return "This sign-in link has expired. Please start again from the same browser.";
+  if (m.includes("network") || m.includes("fetch"))
+    return "Couldn't reach the sign-in service. Check your connection and try again.";
+  return "Google sign-in failed. Please try again.";
+}
+
 export const authAdapter = {
   async currentUser(): Promise<User | null> {
     const s = readSession();
     const u = s && readUsers().find((x) => x.id === s.userId);
-    return u ? publicUser(u) : null;
+    if (u) return publicUser(u);
+    try {
+      return await currentGoogleUser();
+    } catch {
+      return null;
+    }
+  },
+
+  googleAvailable() {
+    return supabaseConfigured;
+  },
+
+  /** Sends the browser to Google's account chooser. Resolves only if that fails. */
+  async signInWithGoogle(): Promise<void> {
+    const sb = getSupabase();
+    if (!sb) throw new AuthError("Google sign-in isn't set up for this app yet.");
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}${OAUTH_CALLBACK_PATH}`,
+        scopes: "openid email profile",
+        queryParams: { prompt: "select_account" },
+      },
+    });
+    if (error) throw new AuthError(friendlyOAuthError(error.message));
+  },
+
+  /** Finishes the OAuth redirect: trades the one-time code for a session. */
+  async completeGoogleSignIn(params: URLSearchParams): Promise<User> {
+    const sb = getSupabase();
+    if (!sb) throw new AuthError("Google sign-in isn't set up for this app yet.");
+    const oauthError = params.get("error_description") || params.get("error");
+    if (oauthError) throw new AuthError(friendlyOAuthError(oauthError));
+    const code = params.get("code");
+    if (code) {
+      const { error } = await sb.auth.exchangeCodeForSession(code);
+      // A refresh of this page reuses the code; fall back to the session it already made.
+      if (error && !(await currentGoogleUser())) throw new AuthError(friendlyOAuthError(error.message));
+    }
+    const user = await currentGoogleUser();
+    if (!user) throw new AuthError("This sign-in link is incomplete. Please try again.");
+    // A Google sign-in replaces any email/password session in this browser.
+    writeSession(null);
+    // Continuing with Google means accepting the current documents (stated
+    // under the button). The database stamps the time.
+    const { error: consentError } = await sb.rpc("record_consent", { p_version: LEGAL.version });
+    if (consentError) {
+      console.warn("[auth] Could not record consent:", consentError.message);
+      return user;
+    }
+    return (await currentGoogleUser()) ?? user;
+  },
+
+  /** Saves the display name to the cloud profile (Google accounts). */
+  async updateDisplayName(user: User, name: string) {
+    if (user.provider !== "google") return;
+    const sb = getSupabase();
+    if (!sb) return;
+    const { error } = await sb
+      .from("profiles")
+      .update({ display_name: name.slice(0, LIMITS.name) })
+      .eq("id", user.id);
+    if (error) throw new AuthError("Couldn't save your name to your account. Please try again.");
   },
 
   async signIn(identifier: string, password: string, remember: boolean): Promise<User> {
@@ -271,6 +425,23 @@ export const authAdapter = {
 
   async signOut() {
     writeSession(null);
+    const sb = getSupabase();
+    if (sb) {
+      try {
+        await sb.auth.signOut();
+      } catch {}
+    }
+  },
+
+  /** Raw saved workspace of a local account with this email, if any (used to carry it over to Google). */
+  localWorkspaceForEmail(email: string): string | null {
+    const u = readUsers().find((x) => x.email === norm(email));
+    if (!u) return null;
+    try {
+      return localStorage.getItem(`cali-task:workspace:${u.id}`);
+    } catch {
+      return null;
+    }
   },
 
   usernameTaken(username: string) {
@@ -293,6 +464,8 @@ interface AuthState {
   signIn: (identifier: string, password: string, remember: boolean) => Promise<User>;
   signUp: (input: { fullName: string; email: string; username: string; password: string }) => Promise<User>;
   signOut: () => Promise<void>;
+  completeGoogleSignIn: (params: URLSearchParams) => Promise<User>;
+  setUser: (user: User) => void;
 }
 
 export const useAuth = create<AuthState>()((set, get) => ({
@@ -317,12 +490,20 @@ export const useAuth = create<AuthState>()((set, get) => ({
     await authAdapter.signOut();
     set({ user: null, status: "anon" });
   },
+  completeGoogleSignIn: async (params) => {
+    const user = await authAdapter.completeGoogleSignIn(params);
+    set({ user, status: "authed" });
+    return user;
+  },
+  setUser: (user) => set({ user }),
 }));
 
 /** Signs out and returns to the login page. */
 export function useLogout() {
   const router = useRouter();
   return async () => {
+    // Make sure the last edits reach the cloud before the session ends.
+    await flushCloudSave();
     await useAuth.getState().signOut();
     router.replace("/login");
   };

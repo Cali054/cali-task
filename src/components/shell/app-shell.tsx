@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { LogOut, X } from "lucide-react";
-import { bindWorkspace } from "@/lib/store";
+import { bindWorkspace, unbindWorkspaceSync } from "@/lib/store";
 import { useAuth, useLogout } from "@/lib/auth";
 import { useUI } from "@/lib/ui-store";
 import { Logo, NavList, Sidebar } from "./sidebar";
@@ -104,16 +104,20 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (status === "anon") router.replace("/login");
   }, [status, router]);
 
+  const userId = user?.id;
   useEffect(() => {
-    if (status !== "authed" || !user) return;
+    if (status === "anon") unbindWorkspaceSync();
+    if (status !== "authed" || !userId) return;
+    const u = useAuth.getState().user!;
     let cancelled = false;
-    bindWorkspace(user.id, user.fullName.split(/\s+/)[0] || user.username).then(() => {
-      if (!cancelled) setBoundFor(user.id);
+    const displayName = u.displayName || u.fullName.split(/\s+/)[0] || u.username;
+    bindWorkspace(u.id, displayName, { cloud: u.provider === "google", email: u.email }).then(() => {
+      if (!cancelled) setBoundFor(u.id);
     });
     return () => {
       cancelled = true;
     };
-  }, [status, user]);
+  }, [status, userId]);
 
   const toggleSidebar = () => {
     setCollapsed((c) => {

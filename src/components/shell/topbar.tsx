@@ -12,6 +12,7 @@ import { useTheme, type ThemePref } from "@/lib/theme";
 import { isOverdue } from "@/lib/metrics";
 import { cn, daysDiff, fmtDate, today } from "@/lib/utils";
 import { Popover } from "@/components/ui/popover";
+import { GoogleMark } from "@/components/auth/auth-ui";
 
 const SEEN_KEY = "cali-task:seen-notifications";
 
@@ -42,16 +43,31 @@ function readSeen(): string[] {
   }
 }
 
-export function Avatar({ name, className }: { name: string; className?: string }) {
+/** Profile picture, or generated initials when there's no picture (or it fails to load). */
+export function Avatar({ name, src, className }: { name: string; src?: string | null; className?: string }) {
   const initials = name.trim().split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase() || "C";
+  const [failed, setFailed] = useState<string | null>(null);
+  const showImage = !!src && failed !== src;
   return (
     <span
       className={cn(
-        "relative grid size-10 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,var(--accent-2),var(--accent-3))] text-sm font-semibold text-white ring-2 ring-white/60 dark:ring-white/15",
+        "relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-[linear-gradient(135deg,var(--accent-2),var(--accent-3))] text-sm font-semibold text-white ring-2 ring-white/60 dark:ring-white/15",
         className,
       )}
     >
-      {initials}
+      {showImage ? (
+        // Google profile photos are served from Google's CDN; no-referrer keeps them loading reliably.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={src}
+          alt=""
+          referrerPolicy="no-referrer"
+          className="size-full object-cover"
+          onError={() => setFailed(src)}
+        />
+      ) : (
+        initials
+      )}
     </span>
   );
 }
@@ -362,17 +378,22 @@ export function Topbar() {
           className="w-64"
           trigger={({ toggle }) => (
             <button onClick={toggle} aria-label="Profile menu" className="rounded-full transition hover:scale-105">
-              <Avatar name={userName} />
+              <Avatar name={userName} src={user?.avatarUrl} />
             </button>
           )}
         >
           {(close) => (
             <div className="space-y-2">
               <div className="flex items-center gap-3 px-2 py-1.5">
-                <Avatar name={userName} className="size-9" />
-                <div>
-                  <p className="text-sm font-semibold">{user?.fullName ?? userName}</p>
+                <Avatar name={userName} src={user?.avatarUrl} className="size-9" />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">{user?.fullName ?? userName}</p>
                   <p className="max-w-40 truncate text-xs text-fg-3">{user?.email ?? "Personal workspace"}</p>
+                  {user?.provider === "google" && (
+                    <p className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-medium text-fg-3">
+                      <GoogleMark className="size-3" /> Signed in with Google
+                    </p>
+                  )}
                 </div>
               </div>
               <ThemeSwitch />
@@ -382,7 +403,7 @@ export function Topbar() {
                   onClick={close}
                   className="flex items-center gap-2 rounded-xl px-2 py-2 text-sm hover:bg-[var(--glass-hover)]"
                 >
-                  <Settings className="size-4" /> Settings
+                  <Settings className="size-4" /> Account settings
                 </Link>
                 <button
                   onClick={() => {

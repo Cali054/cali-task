@@ -1,11 +1,12 @@
 "use client";
 
 import { forwardRef, useEffect, useState, type InputHTMLAttributes, type ReactNode } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { AlertCircle, Check, Eye, EyeOff, Loader2, Moon, Sun, type LucideIcon } from "lucide-react";
 import { CaliLoadingIndicator, CaliLogo } from "@/components/brand/cali-logo";
-import { useAuth } from "@/lib/auth";
+import { AuthError, authAdapter, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { useUI } from "@/lib/ui-store";
 import { cn } from "@/lib/utils";
@@ -316,5 +317,96 @@ export function GlassCheckbox({
         {children}
       </label>
     </div>
+  );
+}
+
+/** Google's four-colour "G" mark, as required by Google's sign-in branding guidelines. */
+export function GoogleMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 48 48" className={className} aria-hidden>
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+    </svg>
+  );
+}
+
+/**
+ * "Continue with Google". Sends the browser to Google's account chooser via
+ * Supabase Auth; the result comes back to /auth/callback.
+ */
+export function GoogleButton({ onError, disabled }: { onError: (message: string | null) => void; disabled?: boolean }) {
+  const [loading, setLoading] = useState(false);
+
+  // Coming back with the browser's Back button restores this page from cache;
+  // don't leave the spinner running.
+  useEffect(() => {
+    const onShow = (e: PageTransitionEvent) => e.persisted && setLoading(false);
+    window.addEventListener("pageshow", onShow);
+    return () => window.removeEventListener("pageshow", onShow);
+  }, []);
+
+  async function start() {
+    onError(null);
+    setLoading(true);
+    try {
+      await authAdapter.signInWithGoogle();
+      // The browser is now leaving for Google; keep the spinner.
+    } catch (e) {
+      onError(e instanceof AuthError ? e.message : "Google sign-in failed. Please try again.");
+      setLoading(false);
+    }
+  }
+
+  return (
+    <motion.button
+      type="button"
+      onClick={start}
+      disabled={loading || disabled}
+      aria-busy={loading}
+      aria-label={loading ? "Connecting to Google" : "Continue with Google"}
+      whileHover={loading || disabled ? undefined : { y: -1 }}
+      whileTap={loading || disabled ? undefined : { scale: 0.98 }}
+      className="group relative flex h-12 w-full items-center justify-center gap-3 overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-white/85 text-sm font-semibold text-[#1f1f1f] shadow-[0_8px_24px_-12px_rgba(40,50,120,0.35),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl transition-[background,box-shadow,opacity] hover:bg-white hover:shadow-[0_14px_32px_-14px_rgba(40,50,120,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-white/[0.07] dark:text-fg dark:hover:bg-white/[0.12]"
+    >
+      <span className="absolute inset-0 -translate-x-full bg-[linear-gradient(110deg,transparent_30%,rgba(120,140,255,0.16)_50%,transparent_70%)] transition-transform duration-700 group-hover:translate-x-full" />
+      <AnimatePresence mode="wait" initial={false}>
+        {loading ? (
+          <motion.span key="l" className="relative flex items-center gap-2.5" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
+            <Loader2 className="size-[18px] animate-spin text-accent" /> Connecting to Google…
+          </motion.span>
+        ) : (
+          <motion.span key="t" className="relative flex items-center gap-3" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
+            <span className="grid size-7 place-items-center rounded-full bg-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+              <GoogleMark className="size-[18px]" />
+            </span>
+            Continue with Google
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </motion.button>
+  );
+}
+
+/** Thin "or" separator between Google and the email form. */
+export function OrDivider({ children = "or" }: { children?: ReactNode }) {
+  return (
+    <div className="my-5 flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.18em] text-fg-3" role="separator">
+      <span className="h-px flex-1 bg-[var(--glass-line)]" />
+      {children}
+      <span className="h-px flex-1 bg-[var(--glass-line)]" />
+    </div>
+  );
+}
+
+/** Consent line shown under the Google button. */
+export function GoogleConsentNote() {
+  return (
+    <p className="mt-2.5 text-center text-[11px] leading-relaxed text-fg-3">
+      By continuing with Google, you agree to our{" "}
+      <Link href="/privacy-policy" className="font-medium text-accent hover:underline">Privacy Policy</Link> and{" "}
+      <Link href="/terms-and-conditions" className="font-medium text-accent hover:underline">Terms &amp; Conditions</Link>.
+    </p>
   );
 }
