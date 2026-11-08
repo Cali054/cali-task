@@ -84,7 +84,7 @@ export function LandingFooter() {
         </div>
         <div className="mt-10 flex flex-col items-center justify-between gap-2 border-t border-line pt-6 text-xs text-fg-3 sm:flex-row">
           <p>© 2026 Cali. All rights reserved.</p>
-          <p>Plan. Track. Complete.</p>
+          <p>Made by {LEGAL.owner}</p>
         </div>
       </div>
     </footer>

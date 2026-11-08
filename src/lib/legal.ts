@@ -2,15 +2,15 @@
  * Privacy Policy and Terms & Conditions content.
  *
  * The text describes how this app actually behaves today (local-first, no
- * servers, no tracking). Update `contactEmail` and `jurisdiction` before
- * publishing, and bump `version` whenever the documents change — the version
+ * servers, no tracking). Update `jurisdiction` before publishing, and bump `version` whenever the documents change — the version
  * is stored with every user's consent record.
  */
 export const LEGAL = {
   appName: "Cali's Task",
   version: "2026-11-04",
   effectiveDate: "November 4, 2026",
-  contactEmail: "privacy@example.com",
+  owner: "Joshua Luis G. Calilong",
+  contactEmail: "calilongjoshualuis@gmail.com",
   jurisdiction: "the country in which the service owner is established",
 };
 
@@ -27,7 +27,7 @@ export interface LegalDoc {
   sections: LegalSection[];
 }
 
-const { appName, contactEmail, jurisdiction } = LEGAL;
+const { appName, owner, contactEmail, jurisdiction } = LEGAL;
 
 export const PRIVACY_POLICY: LegalDoc = {
   slug: "privacy-policy",
@@ -126,7 +126,7 @@ export const PRIVACY_POLICY: LegalDoc = {
     {
       id: "contact",
       title: "Contact Information",
-      body: [`If you have questions about this Privacy Policy or your data, contact us at ${contactEmail}.`],
+      body: [`${appName} is operated by ${owner}. If you have questions about this Privacy Policy or your data, contact us at ${contactEmail}.`],
     },
   ],
 };
@@ -227,7 +227,7 @@ export const TERMS: LegalDoc = {
     {
       id: "contact",
       title: "Contact Information",
-      body: [`Questions about these Terms? Contact us at ${contactEmail}.`],
+      body: [`${appName} is operated by ${owner}. Questions about these Terms? Contact us at ${contactEmail}.`],
     },
   ],
 };
