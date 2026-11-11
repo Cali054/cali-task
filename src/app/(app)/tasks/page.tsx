@@ -13,6 +13,8 @@ import { fmtDate } from "@/lib/utils";
 import { Button, EmptyState, GlassCard, PageHeader, PriorityBadge } from "@/components/ui/glass";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { TaskFlags } from "@/components/tasks/task-bits";
+import { Avatar } from "@/components/shell/topbar";
+import { useAuth } from "@/lib/auth";
 
 type SortKey = "priority" | "deadline" | "status" | "id" | "updated";
 
@@ -34,6 +36,10 @@ export default function TasksPage() {
   const deleteTask = useStore((s) => s.deleteTask);
   const { search, setSearch, openNewTask, openDetail, openEditTask, openProgress } = useUI();
   const changeStatus = useChangeStatus();
+  // Every task in a workspace belongs to its owner, who is the assignee.
+  const user = useAuth((s) => s.user);
+  const ownerName = useStore((s) => s.settings.userName) || user?.fullName || "You";
+  const ownerFirst = ownerName.trim().split(" ")[0];
 
   const [sprintFilter, setSprintFilter] = useState<string>("active");
   const [statusFilter, setStatusFilter] = useState<Status | "all" | "open">("all");
@@ -147,9 +153,10 @@ export default function TasksPage() {
                     <th className="px-2 py-3 font-medium">Task</th>
                     <th className="px-2 py-3 font-medium">Status</th>
                     <th className="px-2 py-3 font-medium">Priority</th>
+                    <th className="px-2 py-3 font-medium">Assignee</th>
                     <th className="px-2 py-3 text-right font-medium">Est.</th>
                     <th className="px-2 py-3 text-right font-medium">Actual</th>
-                    <th className="px-2 py-3 font-medium">Target</th>
+                    <th className="px-2 py-3 font-medium">Due</th>
                     <th className="px-4 py-3" />
                   </tr>
                 </thead>
@@ -170,6 +177,7 @@ export default function TasksPage() {
                           <td className="px-4 py-3 font-mono text-xs text-fg-2">#{t.code}</td>
                           <td className="max-w-[320px] px-2 py-3">
                             <p className="truncate font-medium">{t.title}</p>
+                            {t.description && <p className="truncate text-xs text-fg-3">{t.description}</p>}
                             <TaskFlags task={t} compact />
                           </td>
                           <td className="px-2 py-3" onClick={(e) => e.stopPropagation()}>
@@ -187,6 +195,12 @@ export default function TasksPage() {
                             </select>
                           </td>
                           <td className="px-2 py-3"><PriorityBadge priority={t.priority} /></td>
+                          <td className="px-2 py-3">
+                            <span className="flex items-center gap-2 text-xs text-fg-2">
+                              <Avatar name={ownerName} src={user?.avatarUrl} className="size-6 text-[9px] ring-1" />
+                              <span className="max-w-24 truncate">{ownerFirst}</span>
+                            </span>
+                          </td>
                           <td className="px-2 py-3 text-right tabular-nums">{t.estimateDays}d</td>
                           <td className={`px-2 py-3 text-right tabular-nums ${spent > t.estimateDays ? "text-warn" : ""}`}>{spent ? `${spent}d` : "—"}</td>
                           <td className={`px-2 py-3 text-xs ${isOverdue(t) ? "font-semibold text-warn" : "text-fg-2"}`}>{fmtDate(t.targetDate)}</td>

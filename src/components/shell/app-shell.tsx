@@ -3,11 +3,11 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { LogOut, X } from "lucide-react";
+import { X } from "lucide-react";
 import { bindWorkspace, unbindWorkspaceSync } from "@/lib/store";
 import { useAuth, useLogout } from "@/lib/auth";
 import { useUI } from "@/lib/ui-store";
-import { Logo, NavList, Sidebar } from "./sidebar";
+import { Logo, NavList, Sidebar, SidebarProfile } from "./sidebar";
 import { Topbar } from "./topbar";
 import { TaskFormDialog } from "@/components/dialogs/task-form-dialog";
 import { TaskDetailDialog } from "@/components/dialogs/task-detail-dialog";
@@ -29,14 +29,14 @@ function MobileNav() {
       {open && (
         <>
           <motion.div
-            className="fixed inset-0 z-40 bg-[rgba(20,24,50,0.3)] backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-[rgba(8,7,5,0.5)] backdrop-blur-sm lg:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setOpen(false)}
           />
           <motion.aside
-            className="glass-strong fixed inset-y-3 left-3 z-50 flex w-[272px] flex-col rounded-[28px] p-3 lg:hidden"
+            className="glass-strong fixed inset-y-3 left-3 z-50 flex w-[272px] flex-col rounded-[22px] bg-[var(--bg-sidebar)] p-3 lg:hidden"
             initial={{ x: -300, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -300, opacity: 0 }}
@@ -58,20 +58,20 @@ function MobileNav() {
                 setOpen(false);
                 openNewTask();
               }}
-              className="accent-gradient mb-4 h-11 rounded-2xl text-sm font-semibold text-white"
+              className="accent-gradient mb-4 h-11 rounded-2xl text-sm font-semibold text-on-accent"
             >
               + New Task
             </button>
             <NavList onNavigate={() => setOpen(false)} />
-            <button
-              onClick={() => {
-                setOpen(false);
-                logout();
-              }}
-              className="mt-auto flex h-11 items-center gap-3 rounded-2xl px-3 text-sm font-medium text-fg-2 transition hover:bg-st-blocked/10 hover:text-st-blocked"
-            >
-              <LogOut className="size-[18px]" /> Log out
-            </button>
+            <div className="mt-auto pt-4" onClick={(e) => (e.target as HTMLElement).closest("a") && setOpen(false)}>
+              <SidebarProfile
+                collapsed={false}
+                onLogout={() => {
+                  setOpen(false);
+                  logout();
+                }}
+              />
+            </div>
           </motion.aside>
         </>
       )}

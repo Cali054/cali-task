@@ -87,7 +87,7 @@ export function PreviewFrame({
             <div className="glass-soft hidden h-8 w-44 items-center gap-2 rounded-xl px-3 text-[11px] text-fg-3 md:flex">
               <Search className="size-3.5" /> Search tasks…
             </div>
-            <span className="accent-gradient grid size-8 shrink-0 place-items-center rounded-full text-[11px] font-semibold text-white">
+            <span className="accent-gradient grid size-8 shrink-0 place-items-center rounded-full text-[11px] font-semibold text-on-accent">
               C
             </span>
           </div>

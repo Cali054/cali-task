@@ -20,14 +20,14 @@ import {
   Timer,
   TrendingDown,
 } from "lucide-react";
-import { useActiveSprint, useSprintTasks, useStore } from "@/lib/store";
+import { actualDays, useActiveSprint, useSprintTasks, useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-store";
-import { burndown, sprintMetrics } from "@/lib/metrics";
+import { burndown, sprintMetrics, weeklyProductivity } from "@/lib/metrics";
 import { PRIORITY_META, STATUS_META } from "@/lib/meta";
 import { STATUSES } from "@/lib/types";
 import { daysDiff, fmtDate, fmtDays, relativeTime, today } from "@/lib/utils";
 import { CardHeader, EmptyState, GlassCard, Progress } from "@/components/ui/glass";
-import { BurndownChart, Ring } from "@/components/charts";
+import { BurndownChart, DailyChart, EstimateVsActualChart, Ring, StatusDonut } from "@/components/charts";
 import { TaskRow } from "@/components/tasks/task-bits";
 
 const fadeUp = {
@@ -98,6 +98,19 @@ export default function OverviewPage() {
   const taskIds = new Set(tasks.map((t) => t.id));
   const recent = activity.filter((a) => !a.taskId || taskIds.has(a.taskId)).slice(0, 6);
 
+  const statusData = STATUSES.map((s) => ({
+    key: s,
+    label: STATUS_META[s].label,
+    value: tasks.filter((t) => t.status === s).length,
+    color: STATUS_META[s].color,
+  }));
+  const estVsActual = tasks
+    .filter((t) => t.status !== "todo" || actualDays(t) > 0)
+    .slice(0, 8)
+    .map((t) => ({ label: `#${t.code}`, estimate: t.estimateDays, actual: actualDays(t) }));
+  const week = weeklyProductivity(tasks);
+  const weekLogged = Math.round(week.reduce((a, d) => a + d.logged, 0) * 100) / 100;
+
   const tMin = sprint?.targetDaysMin ?? null;
   const tMax = sprint?.targetDaysMax ?? null;
   const gap = tMax !== null ? m.estimateTotal - tMax : null;
@@ -160,7 +173,7 @@ export default function OverviewPage() {
                 const Icon = q.icon;
                 const cls = `flex h-14 items-center gap-2.5 rounded-2xl px-3.5 text-left text-[13px] font-medium leading-tight sm:text-sm transition active:scale-[0.98] ${
                   q.primary
-                    ? "accent-gradient col-span-2 justify-center text-white shadow-[0_10px_24px_-10px_var(--accent)] hover:brightness-110"
+                    ? "accent-gradient col-span-2 justify-center text-on-accent shadow-[0_10px_28px_-12px_color-mix(in_srgb,var(--grad-b)_70%,transparent)] hover:brightness-110"
                     : "glass-soft hover:bg-[var(--glass-hover)]"
                 }`;
                 return q.href ? (
@@ -222,7 +235,7 @@ export default function OverviewPage() {
                         )}
                       </div>
                       <div className="flex shrink-0 items-center gap-4 text-xs sm:flex-col sm:items-end sm:gap-1">
-                        <span className="rounded-full bg-st-blocked px-2.5 py-1 font-semibold text-white">
+                        <span className="rounded-full bg-st-blocked px-2.5 py-1 font-semibold text-on-status">
                           {t.blocker ? daysDiff(t.blocker.blockedOn, t0) : 0}d blocked
                         </span>
                         <span className="text-fg-3">Waiting on {t.blocker?.waitingOn || "—"}</span>
@@ -297,26 +310,55 @@ export default function OverviewPage() {
         </motion.div>
         <motion.div custom={11} variants={fadeUp} initial="hidden" animate="show">
           <GlassCard className="h-full p-5">
-            <CardHeader title="Status breakdown" subtitle={`${m.total} tasks in ${sprint?.name}`} icon={Layers} />
-            <div className="mt-4 flex h-3 gap-[2px] overflow-hidden rounded-full">
-              {STATUSES.map((s) => {
-                const n = tasks.filter((t) => t.status === s).length;
-                return n ? <div key={s} style={{ flex: n, background: STATUS_META[s].color }} title={`${STATUS_META[s].label}: ${n}`} /> : null;
-              })}
+            <CardHeader title="Status distribution" subtitle={`${m.total} tasks in ${sprint?.name}`} icon={Layers} />
+            <div className="mt-4 flex flex-col items-center gap-5 sm:flex-row xl:flex-col 2xl:flex-row">
+              <StatusDonut data={statusData} />
+              <ul className="w-full space-y-2">
+                {statusData.map((d) => {
+                  const Icon = STATUS_META[d.key as keyof typeof STATUS_META].icon;
+                  return (
+                    <li key={d.key} className="flex items-center gap-2 text-sm">
+                      <Icon className="size-4" style={{ color: d.color }} />
+                      <span className="flex-1 text-fg-2">{d.label}</span>
+                      <span className="font-semibold tabular-nums">{d.value}</span>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
-            <ul className="mt-4 space-y-2">
-              {STATUSES.map((s) => {
-                const n = tasks.filter((t) => t.status === s).length;
-                const Icon = STATUS_META[s].icon;
-                return (
-                  <li key={s} className="flex items-center gap-2 text-sm">
-                    <Icon className="size-4" style={{ color: STATUS_META[s].color }} />
-                    <span className="flex-1 text-fg-2">{STATUS_META[s].label}</span>
-                    <span className="font-semibold">{n}</span>
-                  </li>
-                );
-              })}
-            </ul>
+          </GlassCard>
+        </motion.div>
+      </div>
+
+      {/* Effort analytics */}
+      <div className="grid gap-5 xl:grid-cols-2">
+        <motion.div custom={12} variants={fadeUp} initial="hidden" animate="show">
+          <GlassCard className="h-full p-5">
+            <CardHeader
+              title="Estimated vs actual"
+              subtitle="Days per task, for tasks that have started"
+              icon={Hourglass}
+              action={<Link href="/reports" className="text-xs font-medium text-accent hover:underline">Reports →</Link>}
+            />
+            <div className="mt-4">
+              {estVsActual.length ? (
+                <EstimateVsActualChart data={estVsActual} height={230} />
+              ) : (
+                <EmptyState icon={Hourglass} title="Nothing started yet" text="Log time on a task to compare it with its estimate." />
+              )}
+            </div>
+          </GlassCard>
+        </motion.div>
+        <motion.div custom={13} variants={fadeUp} initial="hidden" animate="show">
+          <GlassCard className="h-full p-5">
+            <CardHeader
+              title="Weekly productivity"
+              subtitle={`${weekLogged} ${weekLogged === 1 ? "day" : "days"} of effort logged in the last 7 days`}
+              icon={Timer}
+            />
+            <div className="mt-4">
+              <DailyChart data={week} height={230} />
+            </div>
           </GlassCard>
         </motion.div>
       </div>
@@ -339,7 +381,7 @@ export default function OverviewPage() {
                   action={
                     <button
                       onClick={() => ui.openNewTask()}
-                      className="accent-gradient inline-flex h-10 items-center gap-2 rounded-2xl px-4 text-sm font-semibold text-white"
+                      className="accent-gradient inline-flex h-10 items-center gap-2 rounded-2xl px-4 text-sm font-semibold text-on-accent"
                     >
                       <Plus className="size-4" /> New task
                     </button>

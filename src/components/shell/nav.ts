@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 export const NAV: { href: string; label: string; icon: LucideIcon }[] = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/tasks", label: "My Tasks", icon: ListTodo },
   { href: "/board", label: "Sprint Board", icon: KanbanSquare },
   { href: "/timeline", label: "Timeline", icon: GanttChartSquare },

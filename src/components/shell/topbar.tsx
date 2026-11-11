@@ -51,7 +51,7 @@ export function Avatar({ name, src, className }: { name: string; src?: string | 
   return (
     <span
       className={cn(
-        "relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-[linear-gradient(135deg,var(--accent-2),var(--accent-3))] text-sm font-semibold text-white ring-2 ring-white/60 dark:ring-white/15",
+        "relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full accent-gradient text-sm font-semibold ring-2 ring-[color-mix(in_srgb,var(--grad-b)_35%,transparent)]",
         className,
       )}
     >
@@ -226,7 +226,7 @@ function Notifications() {
         >
           <Bell className="size-[18px]" />
           {unread > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 grid min-w-4 place-items-center rounded-full bg-st-blocked px-1 text-[10px] font-bold text-white">
+            <span className="absolute -right-0.5 -top-0.5 grid min-w-4 place-items-center rounded-full bg-st-blocked px-1 text-[10px] font-bold text-on-status">
               {unread}
             </span>
           )}

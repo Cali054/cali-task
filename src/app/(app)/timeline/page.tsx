@@ -151,7 +151,7 @@ export default function TimelinePage() {
                         <button
                           onClick={() => openDetail(t.id)}
                           className={cn(
-                            "relative z-[1] mx-0.5 flex h-7 items-center overflow-hidden rounded-full px-2 text-[10px] font-semibold text-white shadow-sm transition hover:brightness-110",
+                            "relative z-[1] mx-0.5 flex h-7 items-center overflow-hidden rounded-full px-2 text-[10px] font-semibold text-on-status shadow-sm transition hover:brightness-110",
                             t.status === "completed" && "opacity-75",
                           )}
                           style={{
@@ -163,7 +163,7 @@ export default function TimelinePage() {
                         >
                           {/* actual progress overlay */}
                           {t.estimateDays > 0 && spent > 0 && (
-                            <span className="absolute inset-y-0 left-0 bg-white/25" style={{ width: `${Math.min(100, (spent / t.estimateDays) * 100)}%` }} />
+                            <span className="absolute inset-y-0 left-0 bg-[rgba(255,255,255,0.22)] mix-blend-overlay" style={{ width: `${Math.min(100, (spent / t.estimateDays) * 100)}%` }} />
                           )}
                           <span className="relative truncate">{STATUS_META[t.status].label}</span>
                         </button>
@@ -201,7 +201,7 @@ export default function TimelinePage() {
                   >
                     <div className="relative" style={{ gridColumn: todayIdx + 2 }}>
                       <div className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 rounded-full bg-accent/70" />
-                      <span className="absolute -top-1 left-1/2 -translate-x-1/2 rounded-full bg-accent px-1.5 text-[9px] font-bold text-white">
+                      <span className="absolute -top-1 left-1/2 -translate-x-1/2 rounded-full bg-accent px-1.5 text-[9px] font-bold text-on-status">
                         Today
                       </span>
                     </div>

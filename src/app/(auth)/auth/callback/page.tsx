@@ -61,7 +61,7 @@ export default function AuthCallbackPage() {
         </div>
       ) : (
         <div className="flex flex-col items-center gap-4 py-4" role="status" aria-live="polite">
-          <span className="relative grid size-16 place-items-center rounded-full bg-white shadow-[0_10px_30px_-12px_rgba(40,50,120,0.5)]">
+          <span className="relative grid size-16 place-items-center rounded-full bg-white shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)]">
             <GoogleMark className="size-8" />
             <Loader2 className="absolute -inset-2 size-20 animate-spin text-accent/60" strokeWidth={1.2} aria-hidden />
           </span>

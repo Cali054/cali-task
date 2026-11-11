@@ -73,7 +73,7 @@ export function LegalModal({
   return (
     <D.Root open={open} onOpenChange={onOpenChange}>
       <D.Portal>
-        <D.Overlay className="dialog-overlay fixed inset-0 z-50 bg-[rgba(20,24,50,0.3)] backdrop-blur-sm dark:bg-black/50" />
+        <D.Overlay className="dialog-overlay fixed inset-0 z-50 bg-[rgba(8,7,5,0.5)] backdrop-blur-sm dark:bg-black/50" />
         <D.Content
           className="dialog-content glass-strong fixed left-1/2 top-1/2 z-50 flex h-[min(86dvh,760px)] w-[calc(100vw-24px)] max-w-2xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-[28px] focus:outline-none"
           onOpenAutoFocus={(e) => {
@@ -127,7 +127,7 @@ export function LegalModal({
                 onRead();
                 onOpenChange(false);
               }}
-              className="accent-gradient inline-flex h-10 items-center gap-2 rounded-2xl px-4 text-sm font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+              className="accent-gradient inline-flex h-10 items-center gap-2 rounded-2xl px-4 text-sm font-semibold text-on-accent transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <CheckCircle2 className="size-4" /> I&apos;ve read this
             </button>

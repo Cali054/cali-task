@@ -243,7 +243,7 @@ export function SubmitButton({ loading, children, disabled }: { loading?: boolea
       disabled={loading || disabled}
       whileHover={loading || disabled ? undefined : { y: -1 }}
       whileTap={loading || disabled ? undefined : { scale: 0.98 }}
-      className="accent-gradient group relative flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-2xl text-sm font-semibold text-white shadow-[0_12px_28px_-10px_var(--accent)] transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+      className="accent-gradient group relative flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-2xl text-sm font-semibold text-on-accent shadow-[0_10px_28px_-12px_color-mix(in_srgb,var(--grad-b)_70%,transparent)] transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
     >
       <span className="absolute inset-0 -translate-x-full bg-[linear-gradient(110deg,transparent_30%,rgba(255,255,255,0.35)_50%,transparent_70%)] transition-transform duration-700 group-hover:translate-x-full" />
       <AnimatePresence mode="wait" initial={false}>
@@ -303,14 +303,14 @@ export function GlassCheckbox({
         className={cn(
           "mt-0.5 grid size-5 shrink-0 place-items-center rounded-md border transition-all duration-200",
           checked
-            ? "accent-gradient border-transparent shadow-[0_4px_12px_-4px_var(--accent)]"
+            ? "accent-gradient border-transparent shadow-[0_10px_28px_-12px_color-mix(in_srgb,var(--grad-b)_70%,transparent)]"
             : invalid
               ? "border-st-blocked bg-st-blocked/10"
               : "border-[var(--glass-border)] bg-[var(--glass-soft)] hover:border-accent",
         )}
       >
         <motion.span initial={false} animate={{ scale: checked ? 1 : 0 }} transition={{ type: "spring", stiffness: 500, damping: 25 }}>
-          <Check className="size-3.5 text-white" strokeWidth={3} />
+          <Check className="size-3.5 text-on-accent" strokeWidth={3} />
         </motion.span>
       </button>
       <label htmlFor={id} className="cursor-pointer select-none text-sm leading-snug text-fg-2">
@@ -368,9 +368,9 @@ export function GoogleButton({ onError, disabled }: { onError: (message: string 
       aria-label={loading ? "Connecting to Google" : "Continue with Google"}
       whileHover={loading || disabled ? undefined : { y: -1 }}
       whileTap={loading || disabled ? undefined : { scale: 0.98 }}
-      className="group relative flex h-12 w-full items-center justify-center gap-3 overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-white/85 text-sm font-semibold text-[#1f1f1f] shadow-[0_8px_24px_-12px_rgba(40,50,120,0.35),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl transition-[background,box-shadow,opacity] hover:bg-white hover:shadow-[0_14px_32px_-14px_rgba(40,50,120,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-white/[0.07] dark:text-fg dark:hover:bg-white/[0.12]"
+      className="group relative flex h-12 w-full items-center justify-center gap-3 overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-white/85 text-sm font-semibold text-[#1f1f1f] shadow-[0_8px_24px_-12px_rgba(120,85,40,0.35),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl transition-[background,box-shadow,opacity] hover:bg-white hover:shadow-[var(--glow)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-[rgba(55,52,45,0.55)] dark:text-fg dark:hover:bg-[rgba(70,65,55,0.7)]"
     >
-      <span className="absolute inset-0 -translate-x-full bg-[linear-gradient(110deg,transparent_30%,rgba(120,140,255,0.16)_50%,transparent_70%)] transition-transform duration-700 group-hover:translate-x-full" />
+      <span className="absolute inset-0 -translate-x-full bg-[linear-gradient(110deg,transparent_30%,rgba(232,185,111,0.18)_50%,transparent_70%)] transition-transform duration-700 group-hover:translate-x-full" />
       <AnimatePresence mode="wait" initial={false}>
         {loading ? (
           <motion.span key="l" className="relative flex items-center gap-2.5" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>

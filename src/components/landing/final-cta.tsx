@@ -13,7 +13,7 @@ export function FinalCTA() {
           <div aria-hidden className="pointer-events-none absolute inset-0">
             <div className="landing-orb -left-20 -top-24 size-[360px] bg-[var(--orb-a)]" />
             <div className="landing-orb -bottom-28 -right-16 size-[400px] bg-[var(--orb-b)] [animation-delay:-8s]" />
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--grad-a)_70%,transparent)] to-transparent" />
           </div>
           <div className="relative">
             <CaliLogoIcon size={64} float glow className="mx-auto" />

@@ -30,7 +30,7 @@ function BlockedCard({ task }: { task: Task }) {
     <motion.div layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}>
       <GlassCard className="overflow-hidden">
         <div className="flex flex-wrap items-start gap-4 border-b border-line bg-st-blocked/5 p-5">
-          <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-st-blocked text-white shadow-[0_10px_24px_-10px_var(--st-blocked)]">
+          <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-st-blocked text-on-status shadow-[0_10px_24px_-10px_var(--st-blocked)]">
             <div className="text-center leading-none">
               <p className="text-xl font-bold">{days}</p>
               <p className="text-[9px] font-semibold uppercase">{days === 1 ? "day" : "days"}</p>

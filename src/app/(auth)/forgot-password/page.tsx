@@ -61,7 +61,7 @@ export default function ForgotPasswordPage() {
           </span>
           <Link
             href="/login"
-            className="accent-gradient flex h-12 w-full items-center justify-center rounded-2xl text-sm font-semibold text-white shadow-[0_12px_28px_-10px_var(--accent)] hover:brightness-110"
+            className="accent-gradient flex h-12 w-full items-center justify-center rounded-2xl text-sm font-semibold text-on-accent shadow-[0_10px_28px_-12px_color-mix(in_srgb,var(--grad-b)_70%,transparent)] hover:brightness-110"
           >
             Go to sign in
           </Link>

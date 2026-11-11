@@ -30,7 +30,7 @@ export function BenefitsSection() {
               <li key={b.title}>
                 <Reveal delay={i * 0.05} className="h-full">
                   <div className="glass-soft flex h-full gap-3 rounded-[20px] p-4 transition duration-300 hover:bg-[var(--glass-hover)]">
-                    <span className="accent-gradient grid size-9 shrink-0 place-items-center rounded-xl text-white">
+                    <span className="accent-gradient grid size-9 shrink-0 place-items-center rounded-xl text-on-accent">
                       <b.icon className="size-4" aria-hidden />
                     </span>
                     <div>

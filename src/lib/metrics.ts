@@ -1,6 +1,6 @@
 import type { Sprint, Task } from "./types";
 import { actualDays } from "./store";
-import { today, workingDaysBetween } from "./utils";
+import { addDays, today, workingDaysBetween } from "./utils";
 
 export function isOverdue(t: Task, on = today()) {
   return t.status !== "completed" && !!t.targetDate && t.targetDate < on;
@@ -88,4 +88,16 @@ export function dailyProductivity(tasks: Task[], sprint: Sprint) {
     logged: Math.round(tasks.reduce((a, t) => a + t.timeLogs.filter((l) => l.date === d).reduce((x, l) => x + l.days, 0), 0) * 100) / 100,
     completed: tasks.filter((t) => t.completedDate === d).length,
   }));
+}
+
+/** Effort logged and tasks completed on each of the last 7 calendar days (ending `end`). */
+export function weeklyProductivity(tasks: Task[], end = today()) {
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = addDays(end, i - 6);
+    return {
+      date: d,
+      logged: Math.round(tasks.reduce((a, t) => a + t.timeLogs.filter((l) => l.date === d).reduce((x, l) => x + l.days, 0), 0) * 100) / 100,
+      completed: tasks.filter((t) => t.completedDate === d).length,
+    };
+  });
 }

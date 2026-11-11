@@ -26,7 +26,7 @@ export function GlassDialog({
   return (
     <D.Root open={open} onOpenChange={onOpenChange}>
       <D.Portal>
-        <D.Overlay className="dialog-overlay fixed inset-0 z-50 bg-[rgba(20,24,50,0.28)] backdrop-blur-sm dark:bg-black/50" />
+        <D.Overlay className="dialog-overlay fixed inset-0 z-50 bg-[rgba(8,7,5,0.5)] backdrop-blur-sm dark:bg-black/50" />
         <D.Content
           className={cn(
             "dialog-content glass-strong fixed left-1/2 top-1/2 z-50 flex max-h-[min(90dvh,820px)] w-[calc(100vw-24px)] max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col rounded-[28px] focus:outline-none",

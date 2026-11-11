@@ -31,7 +31,7 @@ function CardBody({ task, dragging }: { task: Task; dragging?: boolean }) {
       className={cn(
         "glass rounded-[18px] p-3.5 transition-shadow",
         task.status === "blocked" && "ring-1 ring-st-blocked/40",
-        dragging && "rotate-[2deg] shadow-[0_24px_48px_-12px_rgba(60,70,160,0.45)]",
+        dragging && "rotate-[2deg] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.55)] glow-active",
       )}
     >
       <div className="mb-1.5 flex items-center justify-between gap-2">

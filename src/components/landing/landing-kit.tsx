@@ -104,7 +104,7 @@ export function CtaLink({
         "group inline-flex select-none items-center justify-center gap-2 whitespace-nowrap font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 active:scale-[0.97]",
         size === "md" ? "h-10 rounded-2xl px-4 text-sm" : "h-12 rounded-[18px] px-6 text-[15px]",
         variant === "primary"
-          ? "accent-gradient text-white shadow-[0_12px_30px_-10px_color-mix(in_srgb,var(--accent)_75%,transparent)] hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-12px_color-mix(in_srgb,var(--accent)_85%,transparent)] hover:brightness-110"
+          ? "accent-gradient text-on-accent shadow-[0_10px_28px_-12px_color-mix(in_srgb,var(--grad-b)_70%,transparent)] hover:-translate-y-0.5 hover:shadow-[0_10px_28px_-12px_color-mix(in_srgb,var(--grad-b)_70%,transparent)] hover:brightness-110"
           : "glass text-fg hover:-translate-y-0.5 hover:bg-[var(--glass-hover)]",
         className,
       )}

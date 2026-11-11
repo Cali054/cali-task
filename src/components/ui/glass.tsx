@@ -61,10 +61,10 @@ export const Button = React.forwardRef<
         size === "md" && "h-10 rounded-2xl px-4 text-sm",
         size === "icon" && "size-10 rounded-2xl",
         variant === "primary" &&
-          "accent-gradient text-white shadow-[0_8px_24px_-8px_color-mix(in_srgb,var(--accent)_70%,transparent)] hover:brightness-110",
-        variant === "glass" && "glass-soft text-fg hover:bg-[var(--glass-hover)]",
+          "accent-gradient font-semibold text-on-accent shadow-[0_10px_28px_-12px_color-mix(in_srgb,var(--grad-b)_70%,transparent)] hover:brightness-105 hover:shadow-[var(--glow)]",
+        variant === "glass" && "glass-soft text-fg hover:border-[color-mix(in_srgb,var(--accent-3)_55%,transparent)] hover:bg-[var(--glass-hover)]",
         variant === "ghost" && "text-fg-2 hover:bg-[var(--glass-soft)] hover:text-fg",
-        variant === "danger" && "bg-st-blocked text-white hover:brightness-110",
+        variant === "danger" && "bg-st-blocked text-on-status hover:brightness-110",
         className,
       )}
       {...props}

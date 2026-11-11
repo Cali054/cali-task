@@ -183,14 +183,14 @@ export function TourOverlay() {
           {rect ? (
             <motion.div
               aria-hidden
-              className="pointer-events-none absolute rounded-[22px] ring-2 ring-white/70 dark:ring-white/40"
-              style={{ boxShadow: "0 0 0 9999px rgba(10, 12, 32, 0.58), 0 0 32px 4px color-mix(in srgb, var(--accent) 45%, transparent)" }}
+              className="pointer-events-none absolute rounded-[22px] ring-2 ring-[color-mix(in_srgb,var(--grad-b)_70%,transparent)]"
+              style={{ boxShadow: "0 0 0 9999px rgba(8, 7, 5, 0.66), 0 0 32px 4px color-mix(in srgb, var(--accent) 45%, transparent)" }}
               initial={false}
               animate={{ top: rect.top, left: rect.left, width: rect.width, height: rect.height }}
               transition={spring}
             />
           ) : (
-            <div aria-hidden className="absolute inset-0 bg-[rgba(10,12,32,0.58)] backdrop-blur-[2px]" />
+            <div aria-hidden className="absolute inset-0 bg-[rgba(8,7,5,0.66)] backdrop-blur-[2px]" />
           )}
 
           <motion.div
@@ -279,7 +279,7 @@ export function TourOverlay() {
               )}
               <button
                 onClick={next}
-                className="accent-gradient inline-flex h-10 items-center gap-1.5 rounded-2xl px-4 text-sm font-semibold text-white shadow-[0_10px_24px_-10px_var(--accent)] transition hover:brightness-110"
+                className="accent-gradient inline-flex h-10 items-center gap-1.5 rounded-2xl px-4 text-sm font-semibold text-on-accent shadow-[0_10px_28px_-12px_color-mix(in_srgb,var(--grad-b)_70%,transparent)] transition hover:brightness-110"
               >
                 {isLast ? (
                   <>

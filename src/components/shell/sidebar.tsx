@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { ChevronsLeft, LogOut, Plus } from "lucide-react";
-import { useLogout } from "@/lib/auth";
+import { useAuth, useLogout } from "@/lib/auth";
+import { Avatar } from "./topbar";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-store";
@@ -44,16 +45,23 @@ export function NavList({ collapsed, onNavigate }: { collapsed?: boolean; onNavi
             {active && (
               <motion.span
                 layoutId="nav-active"
-                className="glass absolute inset-0 rounded-2xl"
+                className="glass glow-active absolute inset-0 rounded-2xl"
                 transition={{ type: "spring", stiffness: 420, damping: 34 }}
-              />
+              >
+                <span aria-hidden className="accent-gradient absolute inset-y-2.5 left-0 w-[3px] rounded-full" />
+              </motion.span>
             )}
-            <Icon className={cn("relative size-[18px] shrink-0", active && "text-accent")} />
+            <Icon
+              className={cn(
+                "relative size-[18px] shrink-0 transition-colors",
+                active ? "text-accent drop-shadow-[0_0_6px_color-mix(in_srgb,var(--grad-b)_60%,transparent)]" : "text-accent/60 group-hover:text-accent",
+              )}
+            />
             {!collapsed && <span className="relative truncate">{item.label}</span>}
             {item.href === "/blocked" && blocked > 0 && (
               <span
                 className={cn(
-                  "relative grid min-w-5 place-items-center rounded-full bg-st-blocked px-1.5 text-[10px] font-bold text-white",
+                  "relative grid min-w-5 place-items-center rounded-full bg-st-blocked px-1.5 text-[10px] font-bold text-on-status",
                   collapsed ? "absolute right-1.5 top-1.5 min-w-4 px-1" : "ml-auto",
                 )}
               >
@@ -67,6 +75,49 @@ export function NavList({ collapsed, onNavigate }: { collapsed?: boolean; onNavi
   );
 }
 
+/** Signed-in user at the foot of the sidebar: photo, name, email, log out. */
+export function SidebarProfile({ collapsed, onLogout }: { collapsed: boolean; onLogout: () => void }) {
+  const user = useAuth((s) => s.user);
+  const displayName = useStore((s) => s.settings.userName);
+  const name = displayName || user?.fullName || "Cali";
+  if (collapsed) {
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <Link href="/settings" title={`${name} · Account settings`} className="rounded-full transition hover:scale-105">
+          <Avatar name={name} src={user?.avatarUrl} className="size-9" />
+        </Link>
+        <button
+          onClick={onLogout}
+          title="Log out"
+          aria-label="Log out"
+          className="grid size-10 place-items-center rounded-2xl text-fg-3 transition hover:bg-st-blocked/10 hover:text-st-blocked"
+        >
+          <LogOut className="size-[18px]" />
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className="glass-soft flex items-center gap-2.5 rounded-[18px] p-2">
+      <Link href="/settings" className="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl" title="Account settings">
+        <Avatar name={name} src={user?.avatarUrl} className="size-9" />
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-semibold">{user?.fullName || name}</span>
+          <span className="block truncate text-[11px] text-fg-3">{user?.email || "Personal workspace"}</span>
+        </span>
+      </Link>
+      <button
+        onClick={onLogout}
+        title="Log out"
+        aria-label="Log out"
+        className="grid size-9 shrink-0 place-items-center rounded-xl text-fg-3 transition hover:bg-st-blocked/10 hover:text-st-blocked"
+      >
+        <LogOut className="size-4" />
+      </button>
+    </div>
+  );
+}
+
 export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const openNewTask = useUI((s) => s.openNewTask);
   const logout = useLogout();
@@ -74,8 +125,8 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
     <aside
       data-tour="nav"
       className={cn(
-        "glass hidden shrink-0 flex-col rounded-[28px] p-3 transition-[width] duration-300 ease-out lg:flex",
-        collapsed ? "w-[76px]" : "w-[248px]",
+        "glass hidden shrink-0 flex-col rounded-[22px] bg-[var(--bg-sidebar)] p-3 transition-[width] duration-300 ease-out lg:flex",
+        collapsed ? "w-[76px]" : "w-[232px]",
       )}
     >
       <div className={cn("flex items-center px-1.5 pb-5 pt-2", collapsed ? "justify-center" : "justify-between")}>
@@ -85,7 +136,7 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
       <button
         onClick={() => openNewTask()}
         className={cn(
-          "accent-gradient mb-4 flex h-11 items-center justify-center gap-2 rounded-2xl text-sm font-semibold text-white shadow-[0_10px_24px_-10px_var(--accent)] transition hover:brightness-110 active:scale-[0.98]",
+          "accent-gradient mb-4 flex h-11 items-center justify-center gap-2 rounded-2xl text-sm font-semibold text-on-accent shadow-[0_10px_28px_-12px_color-mix(in_srgb,var(--grad-b)_70%,transparent)] transition hover:brightness-110 active:scale-[0.98]",
         )}
         title="New task"
       >
@@ -95,18 +146,8 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
 
       <NavList collapsed={collapsed} />
 
-      <div className="mt-auto space-y-1 pt-4">
-        <button
-          onClick={logout}
-          title={collapsed ? "Log out" : undefined}
-          className={cn(
-            "flex h-10 w-full items-center gap-3 rounded-2xl px-3 text-sm font-medium text-fg-2 transition hover:bg-st-blocked/10 hover:text-st-blocked",
-            collapsed && "justify-center px-0",
-          )}
-        >
-          <LogOut className="size-[18px]" />
-          {!collapsed && "Log out"}
-        </button>
+      <div className="mt-auto space-y-2 pt-4">
+        <SidebarProfile collapsed={collapsed} onLogout={logout} />
         <button
           onClick={onToggle}
           className={cn(

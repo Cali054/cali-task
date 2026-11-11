@@ -9,6 +9,9 @@ import {
   Legend,
   Line,
   ComposedChart,
+  Cell,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -163,9 +166,9 @@ export function Ring({ value, size = 120, stroke = 10, label }: { value: number;
       <svg width={size} height={size} className="-rotate-90" aria-hidden>
         <defs>
           <linearGradient id="ring-g" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="var(--accent-3)" />
-            <stop offset="50%" stopColor="var(--accent)" />
-            <stop offset="100%" stopColor="var(--accent-2)" />
+            <stop offset="0%" stopColor="var(--grad-a)" />
+            <stop offset="50%" stopColor="var(--grad-b)" />
+            <stop offset="100%" stopColor="var(--grad-c)" />
           </linearGradient>
         </defs>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--glass-line)" strokeWidth={stroke} />
@@ -185,6 +188,48 @@ export function Ring({ value, size = 120, stroke = 10, label }: { value: number;
       <div className="absolute text-center">
         <p className="text-2xl font-semibold tracking-tight">{Math.round(pct * 100)}%</p>
         {label && <p className="text-[10px] uppercase tracking-wider text-fg-3">{label}</p>}
+      </div>
+    </div>
+  );
+}
+
+/** Donut of tasks per status, with the total in the middle. */
+export function StatusDonut({
+  data,
+  size = 168,
+}: {
+  data: { key: string; label: string; value: number; color: string }[];
+  size?: number;
+}) {
+  const total = data.reduce((a, d) => a + d.value, 0);
+  const shown = data.filter((d) => d.value > 0);
+  return (
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={shown.length ? shown : [{ key: "empty", label: "No tasks", value: 1, color: "var(--glass-line)" }]}
+            dataKey="value"
+            nameKey="label"
+            innerRadius="70%"
+            outerRadius="100%"
+            paddingAngle={shown.length > 1 ? 2.5 : 0}
+            cornerRadius={4}
+            stroke="none"
+            isAnimationActive
+          >
+            {(shown.length ? shown : [{ key: "empty", color: "var(--glass-line)" }]).map((d) => (
+              <Cell key={d.key} fill={d.color} />
+            ))}
+          </Pie>
+          {shown.length > 0 && <Tooltip content={<GlassTooltip />} />}
+        </PieChart>
+      </ResponsiveContainer>
+      <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
+        <div>
+          <p className="text-2xl font-semibold tracking-tight">{total}</p>
+          <p className="text-[10px] uppercase tracking-wider text-fg-3">tasks</p>
+        </div>
       </div>
     </div>
   );

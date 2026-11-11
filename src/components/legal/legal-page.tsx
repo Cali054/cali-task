@@ -31,7 +31,7 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
           </button>
 
           <header className="glass-strong mb-6 flex flex-col gap-4 rounded-[28px] p-6 sm:flex-row sm:items-center sm:p-8">
-            <span className="accent-gradient grid size-14 shrink-0 place-items-center rounded-[18px] text-white shadow-[0_12px_30px_-10px_var(--accent)]">
+            <span className="accent-gradient grid size-14 shrink-0 place-items-center rounded-[18px] text-on-accent shadow-[0_10px_28px_-12px_color-mix(in_srgb,var(--grad-b)_70%,transparent)]">
               <DocIcon doc={doc} className="size-7" />
             </span>
             <div>
