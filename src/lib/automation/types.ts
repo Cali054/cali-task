@@ -250,6 +250,16 @@ export interface WorkspaceAdapter {
   updateSprint(id: string, patch: Partial<Sprint>): Sprint;
   notify(n: { title: string; message: string; taskId: string | null }): AppNotification;
   sendEmail(n: { subject: string; body: string }): Promise<{ id: string; to: string }>;
+  /** Text from the user's own Gemini/OpenAI key (via Cali's server). */
+  generateText(p: AiRequest): Promise<string>;
+}
+
+export interface AiRequest {
+  provider: "gemini" | "openai";
+  model: string;
+  system: string;
+  prompt: string;
+  maxWords: number;
 }
 
 /** Thrown by nodes. Recoverable errors are retried (network hiccups, etc.). */

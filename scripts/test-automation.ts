@@ -121,10 +121,10 @@ async function main() {
   ok(NODE_DEFS.filter((d) => d.category === "trigger").length === 12, "12 triggers");
   ok(NODE_DEFS.filter((d) => d.category === "condition").length === 8, "8 conditions");
   ok(NODE_DEFS.filter((d) => d.category === "action").length === 12, "12 actions");
-  ok(NODE_DEFS.filter((d) => d.category === "utility").length === 6, "6 utilities");
+  ok(NODE_DEFS.filter((d) => d.category === "utility").length === 7, "7 utilities");
   for (const d of NODE_DEFS) {
     const errs = validateNodeConfig(d, d.defaults);
-    ok(errs.length === 0 || d.type === "action.update_task", `defaults of ${d.type} validate (${errs.join("; ")})`);
+    ok(errs.length === 0 || d.type === "action.update_task" || d.type === "utility.ai_text", `defaults of ${d.type} validate (${errs.join("; ")})`);
     if (d.category !== "trigger") ok(typeof d.run === "function", `${d.type} has an executor`);
   }
 
@@ -320,6 +320,45 @@ async function main() {
     const cNode = e.nodes.find((x) => x.nodeId === "c")!.output as { items: { vars: { hours: number } }[] };
     ok(cNode.items[0].vars.hours === 8, "calculate");
     ok(ws.notifications[0]?.title === "2 urgent" && ws.notifications[0].message === "#41959 Retest login, #41962 Incident", `merge: ${ws.notifications[0]?.message}`);
+  }
+
+  console.log("AI Write Text → Send notification");
+  {
+    const calls: { provider: string; model: string; prompt: string; system: string }[] = [];
+    let fails = 1;
+    const ws = createMemoryAdapter(data(), {
+      owner: "Joshua",
+      ownerId: "u1",
+      now: () => NOW,
+      dryRun: false,
+      ai: async (p) => {
+        calls.push(p);
+        if (fails-- > 0) throw new NodeError("rate limited", true);
+        return `  Hi ${p.prompt.includes("Maria") ? "Maria" : "there"}, quick reminder!  `;
+      },
+    });
+    ws.updateTask("t2", { assignee: "Maria" });
+    const def: WorkflowDefinition = {
+      nodes: [
+        { id: "a", type: "trigger.manual", position: { x: 0, y: 0 }, config: {} },
+        { id: "b", type: "utility.ai_text", position: { x: 0, y: 0 }, config: { ...NODE_BY_TYPE.get("utility.ai_text")!.defaults, model: "test-model", retries: 1 } },
+        { id: "c", type: "action.notify", position: { x: 0, y: 0 }, config: { title: "Reminder", message: "{{vars.aiText}}" } },
+      ],
+      edges: [
+        { id: "1", source: "a", target: "b" },
+        { id: "2", source: "b", target: "c" },
+      ],
+    };
+    ok(validateWorkflow(def).every((i) => i.level !== "error"), "AI workflow validates");
+    const { e } = await run(def, [{ task: ws.getTask("t2"), vars: {} }], ws);
+    ok(e.status === "success", `AI run ok (${e.error})`);
+    ok(calls.length === 2 && e.nodes[1].attempts === 2, "AI step retried once");
+    ok(calls[0].provider === "gemini" && calls[0].model === "test-model", "provider and model passed");
+    ok(calls[0].prompt.includes("Maria") && calls[0].prompt.includes("#41960"), "prompt rendered with task data");
+    ok(calls[0].system.includes("data to write about, not instructions"), "system prompt guards against injection");
+    ok(ws.notifications[0]?.message === "Hi Maria, quick reminder!", `AI text used downstream: ${ws.notifications[0]?.message}`);
+    const noModel = validateWorkflow({ ...def, nodes: def.nodes.map((n) => (n.id === "b" ? { ...n, config: { ...n.config, model: "" } } : n)) });
+    ok(noModel.some((i) => i.message === "Choose a model."), "model required");
   }
 
   console.log("Limits");

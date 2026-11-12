@@ -81,7 +81,8 @@ whenever you edit the documents.
 ## Automation Center
 
 `/automation` is a visual workflow builder (React Flow) with a real execution engine: 12 triggers,
-8 conditions (TRUE/FALSE branches, AND/OR groups), 12 actions and 6 utilities, plus 5 templates,
+8 conditions (TRUE/FALSE branches, AND/OR groups), 12 actions and 7 utilities (including AI Write Text
+with your own Gemini/OpenAI key), plus 5 templates,
 execution history with per-step input/output, notifications and an audit log.
 See [docs/automation.md](docs/automation.md) for how it works, setup (Supabase migration, optional email)
 and its limits. Engine tests: `npm run test:automation`.

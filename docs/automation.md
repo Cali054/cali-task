@@ -15,6 +15,28 @@ schedule or on demand, and really change your workspace (tasks, sprints, comment
 
    Redeploy after adding them. Without them, email steps fail with "Email delivery isn't set up yet" and
    everything else works.
+3. **AI steps (optional):**
+   - Run `supabase/migrations/20261113000000_ai_keys.sql` in Supabase.
+   - Add a server-only `AI_KEYS_SECRET` (Vercel: *Sensitive*). Generate it with
+     `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`.
+   - Don't change the secret later: keys already saved with it become unreadable and have to be saved again.
+   - Then each user adds their own key in **Settings → AI keys**.
+
+## AI Write Text (bring your own key)
+
+- Users paste their own **Gemini** or **OpenAI** key in Settings. The server checks it with the provider,
+  encrypts it with AES-256-GCM using `AI_KEYS_SECRET`, and stores only the encrypted copy in `ai_keys`
+  (with RLS). The key is never sent back to the browser; only its last 4 characters are shown.
+- The step's model list is fetched from the provider with the user's key, so it always matches what their
+  account can use. The instructions are a `{{template}}`; the result is saved as a value (default
+  `{{vars.aiText}}`) for later steps, for example as the body of a Send Email step.
+- Requests go through `/api/ai/generate`, which decrypts the key for that one call. Limits: 60 requests per
+  user per hour (counted in `ai_usage`, which the app can't delete from), 10 items per step, 25 s timeout.
+  Rate-limit and provider errors are retried per the step's setting.
+- AI output only becomes text. It can't trigger actions or change data on its own, and the system prompt
+  tells the model to treat task details as data, not instructions.
+- Email/password accounts can't use AI steps, because their key would have to live in the browser.
+- Usage is billed to the user's own provider account.
 
 ## How it works
 

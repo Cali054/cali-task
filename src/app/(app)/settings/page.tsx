@@ -16,6 +16,7 @@ import Link from "next/link";
 import { Button, CardHeader, Field, GlassCard, PageHeader } from "@/components/ui/glass";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { ThemeSwitch } from "@/components/shell/topbar";
+import { AiKeysCard } from "@/components/settings/ai-keys-card";
 
 export default function SettingsPage() {
   const store = useStore();
@@ -239,6 +240,8 @@ export default function SettingsPage() {
           })}
         </ul>
       </GlassCard>
+
+      <AiKeysCard />
 
       <GlassCard className="p-5" data-tour="settings-data">
         <CardHeader title="Data" subtitle={user?.provider === "google" ? "Synced to your account and cached in this browser. Export to keep your own backup." : "Stored in this browser (localStorage). Export regularly to keep a backup."} icon={Database} />

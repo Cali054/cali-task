@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { getAiModels, type AiProvider } from "@/lib/automation/ai-client";
 import { AlertCircle, Copy, Plus, Save, Trash2, X } from "lucide-react";
 import { FIELDS, fieldKind, OPERATORS, PRIORITY_LABELS, STATUS_LABELS, type Condition, type ConditionSet } from "@/lib/automation/fields";
 import { NODE_BY_TYPE, type ConfigField } from "@/lib/automation/nodes";
@@ -264,6 +266,14 @@ function FieldInput({
         </div>
       );
     }
+    case "model":
+      return (
+        <div className="flex flex-col gap-1.5">
+          {label}
+          <ModelPicker provider={(config[f.providerKey] === "openai" ? "openai" : "gemini") as AiProvider} value={String(value ?? "")} onChange={onChange} />
+          {help}
+        </div>
+      );
     case "conditions":
       return (
         <div className="flex flex-col gap-1.5">
@@ -275,6 +285,49 @@ function FieldInput({
   }
   void config;
   return null;
+}
+
+function ModelPicker({ provider, value, onChange }: { provider: AiProvider; value: string; onChange: (v: string) => void }) {
+  const [state, setState] = useState<{ provider: AiProvider; models?: { id: string; label: string }[]; error?: string } | null>(null);
+  useEffect(() => {
+    let live = true;
+    getAiModels(provider).then(
+      (models) => live && setState({ provider, models }),
+      (e: Error) => live && setState({ provider, error: e.message }),
+    );
+    return () => {
+      live = false;
+    };
+  }, [provider]);
+  const current = state?.provider === provider ? state : null;
+
+  if (current?.error)
+    return (
+      <div className="space-y-1.5">
+        <input className="field font-mono text-xs" value={value} placeholder="model id" onChange={(e) => onChange(e.target.value.trim())} aria-label="Model id" />
+        <p className="text-[11px] leading-snug text-st-blocked">
+          {current.error}{" "}
+          <Link href="/settings#ai-keys" className="font-medium text-accent underline">
+            Settings → AI keys
+          </Link>
+        </p>
+      </div>
+    );
+  if (!current?.models) return <div className="field animate-pulse text-xs text-fg-3">Loading your models…</div>;
+  const known = current.models.some((m) => m.id === value);
+  return (
+    <select className="field text-sm" value={known ? value : ""} onChange={(e) => onChange(e.target.value)}>
+      <option value="" disabled>
+        {value && !known ? `${value} (not available)` : "Choose a model"}
+      </option>
+      {current.models.map((m) => (
+        <option key={m.id} value={m.id}>
+          {m.label}
+          {m.label !== m.id ? ` — ${m.id}` : ""}
+        </option>
+      ))}
+    </select>
+  );
 }
 
 const blankCondition = (): Condition => ({ field: "task.status", operator: "equals", value: "completed" });

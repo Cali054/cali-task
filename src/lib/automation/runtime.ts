@@ -22,6 +22,7 @@ import { bindAutomationStore, useAutomation } from "./store";
 import { hasErrors, validateWorkflow } from "./validate";
 import * as cloud from "./cloud";
 import type {
+  AiRequest,
   AppNotification,
   AutomationEvent,
   Execution,
@@ -298,7 +299,7 @@ async function runExecution(w: Workflow, p: RunParams, resume?: Execution): Prom
   let result: Execution;
   try {
     const ws = p.dryRun
-      ? createMemoryAdapter(workspaceSnapshot(), { owner: ownerName(), ownerId: userId, dryRun: true })
+      ? createMemoryAdapter(workspaceSnapshot(), { owner: ownerName(), ownerId: userId, dryRun: true, ai: aiGenerate })
       : liveAdapter(w, exec);
     result = await executeWorkflow({
       workflow: w,
@@ -477,7 +478,31 @@ function liveAdapter(w: Workflow | null, exec: Execution | null): WorkspaceAdapt
       if (body.notification) A().addNotification(body.notification);
       return { id: body.id ?? "", to: body.to ?? "" };
     },
+    generateText: aiGenerate,
   };
+}
+
+/** Calls the user's own AI provider through Cali's server (the key never reaches the browser). */
+async function aiGenerate(p: AiRequest): Promise<string> {
+  if (!session?.cloud) throw new NodeError("AI steps need a Google account (your API key is stored encrypted on Cali's server).");
+  const token = await cloud.accessToken().catch(() => null);
+  if (!token) throw new NodeError("You're signed out of Google; sign in again to use AI steps.");
+  let res: Response;
+  try {
+    res = await fetch("/api/ai/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(p),
+    });
+  } catch {
+    throw new NodeError("Couldn't reach Cali's server.", true);
+  }
+  const body = (await res.json().catch(() => ({}))) as { text?: string; error?: string };
+  if (!res.ok || !body.text) {
+    const recoverable = res.status === 429 || res.status === 502 || res.status === 504;
+    throw new NodeError(body.error || `AI request failed (${res.status}).`, recoverable);
+  }
+  return body.text;
 }
 
 /* ---------- Scheduler & watchers (leader tab only) ---------- */

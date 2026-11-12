@@ -25,6 +25,7 @@ import {
   GitMerge,
   Hourglass,
   ListFilter,
+  Sparkles,
   Loader2,
   Mail,
   MessageSquarePlus,
@@ -88,6 +89,7 @@ const ICONS: Record<string, LucideIcon> = {
   combine: Combine,
   calculator: Calculator,
   filter: Filter,
+  sparkles: Sparkles,
 };
 
 export function NodeIcon({ name, className }: { name: string; className?: string }) {

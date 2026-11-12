@@ -51,6 +51,9 @@ export function validateNodeConfig(def: NodeDef, config: Record<string, unknown>
       case "date":
         if (v && !/^\d{4}-\d{2}-\d{2}$/.test(String(v))) errs.push(`${f.label}: pick a date.`);
         break;
+      case "model":
+        if (v && !/^[A-Za-z0-9][\w.\-:]{0,99}$/.test(String(v))) errs.push(`${f.label}: invalid model name.`);
+        break;
     }
   }
   if (def.validate) errs.push(...def.validate(config));

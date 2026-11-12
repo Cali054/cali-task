@@ -3,7 +3,7 @@
  * tests in the builder (nothing real changes) and for engine tests.
  */
 import type { AppData, Sprint, Status, Task } from "../types";
-import type { AppNotification, NewTaskInput, WorkspaceAdapter } from "./types";
+import type { AiRequest, AppNotification, NewTaskInput, WorkspaceAdapter } from "./types";
 import { NodeError } from "./types";
 import { toDateStr } from "../utils";
 
@@ -47,7 +47,15 @@ export interface MemoryAdapter extends WorkspaceAdapter {
 
 export function createMemoryAdapter(
   source: AppData,
-  opts: { owner: string; ownerId: string; now?: () => Date; dryRun?: boolean; email?: (n: { subject: string; body: string }) => Promise<{ id: string; to: string }> },
+  opts: {
+    owner: string;
+    ownerId: string;
+    now?: () => Date;
+    dryRun?: boolean;
+    email?: (n: { subject: string; body: string }) => Promise<{ id: string; to: string }>;
+    /** AI text doesn't change the workspace, so dry runs may call the real provider. */
+    ai?: (p: AiRequest) => Promise<string>;
+  },
 ): MemoryAdapter {
   const data: AppData = structuredClone(source);
   let seq = 0;
@@ -151,6 +159,10 @@ export function createMemoryAdapter(
       changes.push(`Email: ${n.subject}`);
       if (opts.email) return opts.email(n);
       return { id: id(), to: "(test — not sent)" };
+    },
+    async generateText(p) {
+      if (opts.ai) return opts.ai(p);
+      return `(AI text from ${p.provider}/${p.model})`;
     },
   };
 }
