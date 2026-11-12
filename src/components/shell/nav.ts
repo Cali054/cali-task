@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   ListTodo,
   Settings,
+  Workflow,
   type LucideIcon,
 } from "lucide-react";
 
@@ -16,5 +17,6 @@ export const NAV: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/timeline", label: "Timeline", icon: GanttChartSquare },
   { href: "/blocked", label: "Blocked Tasks", icon: Ban },
   { href: "/reports", label: "Reports", icon: BarChart3 },
+  { href: "/automation", label: "Automation Center", icon: Workflow },
   { href: "/settings", label: "Settings", icon: Settings },
 ];

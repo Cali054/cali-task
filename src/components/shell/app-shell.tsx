@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { X } from "lucide-react";
 import { bindWorkspace, unbindWorkspaceSync } from "@/lib/store";
 import { useAuth, useLogout } from "@/lib/auth";
+import { startAutomation, stopAutomation } from "@/lib/automation/runtime";
 import { useUI } from "@/lib/ui-store";
 import { Logo, NavList, Sidebar, SidebarProfile } from "./sidebar";
 import { Topbar } from "./topbar";
@@ -106,14 +107,21 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const userId = user?.id;
   useEffect(() => {
-    if (status === "anon") unbindWorkspaceSync();
+    if (status === "anon") {
+      unbindWorkspaceSync();
+      stopAutomation();
+    }
     if (status !== "authed" || !userId) return;
     const u = useAuth.getState().user!;
     let cancelled = false;
     const displayName = u.displayName || u.fullName.split(/\s+/)[0] || u.username;
-    bindWorkspace(u.id, displayName, { cloud: u.provider === "google", email: u.email }).then(() => {
-      if (!cancelled) setBoundFor(u.id);
-    });
+    bindWorkspace(u.id, displayName, { cloud: u.provider === "google", email: u.email })
+      .then(() => {
+        if (!cancelled) setBoundFor(u.id);
+        // Automations start once the workspace they act on is loaded.
+        return startAutomation({ id: u.id, provider: u.provider, email: u.email, fullName: u.fullName });
+      })
+      .catch((e) => console.warn("[automation] failed to start:", e));
     return () => {
       cancelled = true;
     };

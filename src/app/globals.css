@@ -321,3 +321,80 @@ select.field option { background: var(--bg-3); color: var(--fg); }
 ::selection { background: color-mix(in srgb, var(--grad-b) 38%, transparent); color: var(--fg); }
 :focus-visible { outline-color: var(--grad-b); }
 html { scrollbar-color: color-mix(in srgb, var(--accent-3) 55%, transparent) transparent; }
+
+/* ---------- Automation canvas (React Flow) ---------- */
+:root {
+  --wf-dot: rgba(120, 90, 50, 0.22);
+  --wf-mask: rgba(246, 240, 228, 0.7);
+}
+:root.dark {
+  --wf-dot: rgba(232, 185, 111, 0.14);
+  --wf-mask: rgba(17, 18, 17, 0.72);
+}
+.wf-canvas .react-flow {
+  --xy-background-color: transparent;
+  --xy-edge-stroke: var(--accent);
+  --xy-connectionline-stroke: var(--accent);
+  --xy-handle-background-color: var(--bg-3);
+  --xy-minimap-background-color: var(--bg-sidebar);
+  --xy-controls-button-background-color: var(--glass);
+  --xy-controls-button-background-color-hover: var(--glass-hover);
+  --xy-controls-button-color: var(--fg-2);
+  --xy-controls-button-color-hover: var(--fg);
+  --xy-controls-button-border-color: var(--glass-line);
+  --xy-selection-background-color: color-mix(in srgb, var(--accent) 10%, transparent);
+  --xy-selection-border: 1px dashed var(--accent);
+}
+.wf-canvas .react-flow__controls,
+.wf-canvas .react-flow__minimap {
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  box-shadow: 0 12px 30px -16px rgba(0, 0, 0, 0.45);
+}
+.wf-canvas .react-flow__controls-button svg {
+  fill: currentColor;
+}
+.wf-canvas .react-flow__node {
+  border-radius: 20px;
+}
+.wf-node {
+  box-shadow: 0 14px 34px -20px rgba(0, 0, 0, 0.55);
+}
+.wf-node:hover {
+  border-color: color-mix(in srgb, var(--cat) 55%, transparent);
+}
+.wf-node-selected {
+  border-color: color-mix(in srgb, var(--cat) 80%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--cat) 60%, transparent),
+    0 0 26px -4px color-mix(in srgb, var(--cat) 55%, transparent),
+    0 14px 34px -20px rgba(0, 0, 0, 0.55);
+}
+.wf-canvas .react-flow__handle.wf-handle {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--h);
+  background: var(--bg-3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.wf-canvas .react-flow__handle.wf-handle:hover,
+.wf-canvas .react-flow__handle.wf-handle.connectingfrom {
+  transform: scale(1.35);
+  box-shadow: 0 0 10px var(--h);
+}
+.wf-canvas .react-flow__edge.animated path.wf-edge,
+.wf-canvas .react-flow__edge.animated .react-flow__edge-path {
+  stroke-dasharray: 6 5;
+  animation: wf-dash 0.9s linear infinite;
+}
+@keyframes wf-dash {
+  to {
+    stroke-dashoffset: -11;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wf-canvas .react-flow__edge.animated .react-flow__edge-path {
+    animation: none;
+  }
+}

@@ -197,8 +197,8 @@ export default function TasksPage() {
                           <td className="px-2 py-3"><PriorityBadge priority={t.priority} /></td>
                           <td className="px-2 py-3">
                             <span className="flex items-center gap-2 text-xs text-fg-2">
-                              <Avatar name={ownerName} src={user?.avatarUrl} className="size-6 text-[9px] ring-1" />
-                              <span className="max-w-24 truncate">{ownerFirst}</span>
+                              <Avatar name={t.assignee || ownerName} src={t.assignee ? null : user?.avatarUrl} className="size-6 text-[9px] ring-1" />
+                              <span className="max-w-24 truncate">{t.assignee || ownerFirst}</span>
                             </span>
                           </td>
                           <td className="px-2 py-3 text-right tabular-nums">{t.estimateDays}d</td>

@@ -22,6 +22,7 @@ interface FormState {
   targetDate: string;
   completedDate: string;
   notes: string;
+  assignee: string;
   dependencies: string[];
   blockReason: string;
   blockWaitingOn: string;
@@ -57,6 +58,7 @@ function TaskFormDialogInner() {
         targetDate: editing.targetDate ?? "",
         completedDate: editing.completedDate ?? "",
         notes: editing.notes,
+        assignee: editing.assignee ?? "",
         dependencies: editing.dependencies,
         blockReason: editing.blocker?.reason ?? "",
         blockWaitingOn: editing.blocker?.waitingOn ?? "",
@@ -75,6 +77,7 @@ function TaskFormDialogInner() {
       targetDate: addWorkingDays(start, 1),
       completedDate: "",
       notes: "",
+      assignee: "",
       dependencies: [],
       blockReason: "",
       blockWaitingOn: "",
@@ -123,6 +126,7 @@ function TaskFormDialogInner() {
       targetDate: f.targetDate || null,
       completedDate: f.status === "completed" ? f.completedDate || today() : null,
       notes: f.notes,
+      assignee: f.assignee.trim().slice(0, 80) || undefined,
       dependencies: f.dependencies,
       blocker,
     };
@@ -243,6 +247,9 @@ function TaskFormDialogInner() {
           </div>
         </Field>
 
+        <Field label="Assignee" className="sm:col-span-6" hint="Leave empty to keep it assigned to you.">
+          <input className="field" value={f.assignee} maxLength={80} onChange={(e) => set("assignee", e.target.value)} placeholder="You" />
+        </Field>
         <Field label="Notes" className="sm:col-span-6">
           <textarea className="field min-h-20 resize-y" value={f.notes} onChange={(e) => set("notes", e.target.value)} />
         </Field>

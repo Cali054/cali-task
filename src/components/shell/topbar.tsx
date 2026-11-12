@@ -4,13 +4,16 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { tourForPath } from "@/lib/tours";
 import Link from "next/link";
+import { Workflow as WorkflowIcon } from "lucide-react";
+import { useAutomation } from "@/lib/automation/store";
+import { markNotificationsRead } from "@/lib/automation/runtime";
 import { AlertTriangle, Ban, Bell, CircleHelp, LogOut, CalendarClock, Menu, Monitor, Moon, Search, Settings, Sparkles, Sun } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useAuth, useLogout } from "@/lib/auth";
 import { useUI } from "@/lib/ui-store";
 import { useTheme, type ThemePref } from "@/lib/theme";
 import { isOverdue } from "@/lib/metrics";
-import { cn, daysDiff, fmtDate, today } from "@/lib/utils";
+import { cn, daysDiff, fmtDate, relativeTime, today } from "@/lib/utils";
 import { Popover } from "@/components/ui/popover";
 import { GoogleMark } from "@/components/auth/auth-ui";
 
@@ -172,6 +175,8 @@ function GlobalSearch() {
 }
 
 function Notifications() {
+  const router = useRouter();
+  const autoNotes = useAutomation((s) => s.notifications);
   const tasks = useStore((s) => s.tasks);
   const activeSprintId = useStore((s) => s.activeSprintId);
   const openDetail = useUI((s) => s.openDetail);
@@ -179,7 +184,31 @@ function Notifications() {
 
   const items = useMemo(() => {
     const t0 = today();
-    const out: { key: string; taskId: string; icon: typeof Bell; tone: string; title: string; text: string }[] = [];
+    const out: {
+      key: string;
+      taskId: string | null;
+      icon: typeof Bell;
+      tone: string;
+      title: string;
+      text: string;
+      autoId?: string;
+      runId?: string | null;
+      unread?: boolean;
+    }[] = [];
+    // Notifications sent by automations come first, newest on top.
+    for (const n of autoNotes.filter((x) => x.type === "in_app").slice(0, 30)) {
+      out.push({
+        key: `auto:${n.id}`,
+        taskId: n.taskId && tasks.some((t) => t.id === n.taskId) ? n.taskId : null,
+        icon: WorkflowIcon,
+        tone: "var(--accent)",
+        title: n.title,
+        text: `${n.message ? `${n.message} · ` : ""}${relativeTime(n.createdAt)}`,
+        autoId: n.id,
+        runId: n.executionId,
+        unread: !n.readAt,
+      });
+    }
     for (const t of tasks.filter((x) => x.sprintId === activeSprintId)) {
       if (t.status === "blocked" && t.blocker) {
         out.push({
@@ -211,9 +240,10 @@ function Notifications() {
       }
     }
     return out;
-  }, [tasks, activeSprintId]);
+  }, [tasks, activeSprintId, autoNotes]);
 
-  const unread = items.filter((i) => !seen.includes(i.key)).length;
+  const isUnread = (i: (typeof items)[number]) => (i.autoId ? !!i.unread : !seen.includes(i.key));
+  const unread = items.filter(isUnread).length;
 
   return (
     <Popover
@@ -241,7 +271,8 @@ function Notifications() {
               <button
                 className="text-xs font-medium text-accent"
                 onClick={() => {
-                  const keys = items.map((i) => i.key);
+                  markNotificationsRead(items.filter((i) => i.autoId && i.unread).map((i) => i.autoId!));
+                  const keys = items.filter((i) => !i.autoId).map((i) => i.key);
                   setSeen(keys);
                   try {
                     localStorage.setItem(SEEN_KEY, JSON.stringify(keys));
@@ -262,7 +293,9 @@ function Notifications() {
                   <li key={n.key}>
                     <button
                       onClick={() => {
-                        openDetail(n.taskId);
+                        if (n.autoId) markNotificationsRead([n.autoId]);
+                        if (n.taskId) openDetail(n.taskId);
+                        else if (n.runId) router.push(`/automation/runs/${n.runId}`);
                         close();
                       }}
                       className="flex w-full items-start gap-3 rounded-xl px-2 py-2 text-left hover:bg-[var(--glass-hover)]"
@@ -275,8 +308,8 @@ function Notifications() {
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center gap-2 text-sm font-medium">
-                          {n.title}
-                          {!seen.includes(n.key) && <span className="size-1.5 rounded-full bg-accent" />}
+                          <span className="truncate">{n.title}</span>
+                          {isUnread(n) && <span className="size-1.5 shrink-0 rounded-full bg-accent" />}
                         </span>
                         <span className="block truncate text-xs text-fg-3">{n.text}</span>
                       </span>

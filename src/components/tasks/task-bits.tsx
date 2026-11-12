@@ -33,6 +33,11 @@ export function TaskFlags({ task, compact }: { task: Task; compact?: boolean }) 
           <AlertTriangle className="size-3" /> Overdue
         </span>
       )}
+      {(task.labels ?? []).slice(0, 3).map((l) => (
+        <span key={l} className="rounded-full bg-accent/12 px-1.5 py-px text-[10px] font-semibold text-accent">
+          {l}
+        </span>
+      ))}
       {openDeps > 0 && (
         <span className="inline-flex items-center gap-1" title="Unfinished dependencies">
           <Link2 className="size-3" /> {openDeps}

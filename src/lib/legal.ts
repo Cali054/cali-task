@@ -93,7 +93,8 @@ export const PRIVACY_POLICY: LegalDoc = {
         "We use these service providers only to run the app:",
         [
           "Google, to confirm your identity when you choose to continue with Google. Google's own privacy policy applies to your Google account.",
-          "Supabase, to host sign-in sessions, profiles and workspaces for Google accounts.",
+          "Supabase, to host sign-in sessions, profiles, workspaces and automations (workflows, run history and notifications) for Google accounts.",
+          "Resend, to deliver automation emails — only if you add a Send Email step to a workflow. Emails go only to your own verified address.",
           "Vercel, to host the website.",
         ],
         "They process data on our behalf and for no other purpose. Data of email accounts stays on your device, so we cannot access or disclose it. If you export a backup file, you are responsible for where you store or send it.",

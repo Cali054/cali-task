@@ -42,6 +42,13 @@ export interface StatusChange {
   to: Status;
 }
 
+export interface TaskComment {
+  id: string;
+  at: string;
+  author: string;
+  text: string;
+}
+
 export interface Task {
   id: string;
   /** Human task ID, e.g. "41959". Unique across the workspace. */
@@ -61,6 +68,11 @@ export interface Task {
   dependencies: string[];
   blocker: Blocker | null;
   history: StatusChange[];
+  /** Who the task is assigned to (free text). Empty/absent = the workspace owner. */
+  assignee?: string;
+  /** Short tags, e.g. "overdue" set by an automation. */
+  labels?: string[];
+  comments?: TaskComment[];
   createdAt: string;
   updatedAt: string;
 }
@@ -75,6 +87,8 @@ export interface Sprint {
   targetLabel: string;
   targetDaysMin: number | null;
   targetDaysMax: number | null;
+  /** Last progress snapshot written by the "Update sprint progress" automation. */
+  progress?: { percent: number; completed: number; total: number; note: string; updatedAt: string };
   createdAt: string;
 }
 
@@ -111,5 +125,5 @@ export interface AppData {
 
 export type TaskInput = Omit<
   Task,
-  "id" | "createdAt" | "updatedAt" | "history" | "timeLogs" | "blocker"
+  "id" | "createdAt" | "updatedAt" | "history" | "timeLogs" | "blocker" | "comments"
 > & { blocker?: Blocker | null };

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, CalendarDays, Clock, Link2, Pencil, Trash2, Ban, Timer } from "lucide-react";
+import { AlertTriangle, CalendarDays, Clock, Link2, MessageSquare, Pencil, Send, Tag, Trash2, Ban, Timer, UserRound } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 import { actualDays, useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-store";
 import { useChangeStatus } from "@/lib/use-change-status";
@@ -24,6 +25,9 @@ export function TaskDetailDialog() {
   const changeStatus = useChangeStatus();
   const [confirm, setConfirm] = useState(false);
   const [update, setUpdate] = useState("");
+  const [comment, setComment] = useState("");
+  const addComment = useStore((s) => s.addComment);
+  const ownerName = useStore((s) => s.settings.userName) || useAuth.getState().user?.fullName || "You";
 
   if (!task) return null;
   const spent = actualDays(task);
@@ -63,6 +67,14 @@ export function TaskDetailDialog() {
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={task.status} />
             <PriorityBadge priority={task.priority} />
+            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--glass-line)] px-2.5 py-1 text-[11px] font-medium text-fg-2" title="Assignee">
+              <UserRound className="size-3" /> {task.assignee || ownerName}
+            </span>
+            {(task.labels ?? []).map((l) => (
+              <span key={l} className="inline-flex items-center gap-1 rounded-full bg-accent/12 px-2.5 py-1 text-[11px] font-semibold text-accent">
+                <Tag className="size-3" /> {l}
+              </span>
+            ))}
             {overdue && (
               <span className="inline-flex items-center gap-1 rounded-full bg-warn/15 px-2.5 py-1 text-[11px] font-semibold text-warn">
                 <AlertTriangle className="size-3" /> Overdue {daysDiff(task.targetDate!, today())}d
@@ -197,6 +209,38 @@ export function TaskDetailDialog() {
               <p className="whitespace-pre-wrap text-sm text-fg-2">{task.notes}</p>
             </div>
           )}
+
+          <div>
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-medium">
+              <MessageSquare className="size-3.5" /> Comments{task.comments?.length ? ` (${task.comments.length})` : ""}
+            </p>
+            {(task.comments ?? []).length > 0 && (
+              <ul className="mb-2 space-y-2">
+                {(task.comments ?? []).map((c) => (
+                  <li key={c.id} className="glass-soft rounded-2xl px-3 py-2">
+                    <p className="text-[11px] text-fg-3">
+                      <span className="font-medium text-fg-2">{c.author}</span> · {fmtDateTime(c.at)}
+                    </p>
+                    <p className="whitespace-pre-wrap text-sm">{c.text}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <form
+              className="flex gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!comment.trim()) return;
+                addComment(task.id, comment.trim().slice(0, 2000), ownerName);
+                setComment("");
+              }}
+            >
+              <input className="field min-w-0 flex-1 text-sm" value={comment} maxLength={2000} placeholder="Add a comment" onChange={(e) => setComment(e.target.value)} aria-label="Add a comment" />
+              <Button type="submit" size="icon" disabled={!comment.trim()} aria-label="Post comment">
+                <Send className="size-4" />
+              </Button>
+            </form>
+          </div>
 
           <div>
             <p className="mb-1 text-xs font-medium">History</p>

@@ -78,6 +78,14 @@ also give them an emailed password-reset link.
 **Legal documents:** the owner, contact email and jurisdiction are set in `src/lib/legal.ts`. Bump `version`
 whenever you edit the documents.
 
+## Automation Center
+
+`/automation` is a visual workflow builder (React Flow) with a real execution engine: 12 triggers,
+8 conditions (TRUE/FALSE branches, AND/OR groups), 12 actions and 6 utilities, plus 5 templates,
+execution history with per-step input/output, notifications and an audit log.
+See [docs/automation.md](docs/automation.md) for how it works, setup (Supabase migration, optional email)
+and its limits. Engine tests: `npm run test:automation`.
+
 ## Persistence
 
 Data is stored in the browser's `localStorage`, one workspace per account. To use a real database, implement

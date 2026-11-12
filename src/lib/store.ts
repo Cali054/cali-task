@@ -19,6 +19,7 @@ import { STATUS_META } from "./meta";
 import { TOUR_IDS } from "./tours";
 import { cancelCloudSave, loadCloudWorkspace, queueCloudSave } from "./cloud-sync";
 import { authAdapter } from "./auth";
+import { suppressEvents } from "./automation/event-gate";
 
 interface Actions {
   addTask: (input: TaskInput) => Task;
@@ -28,6 +29,7 @@ interface Actions {
   blockTask: (id: string, blocker: Omit<Blocker, "updates">) => void;
   addBlockerUpdate: (id: string, text: string, resolveTo?: Status) => void;
   logTime: (id: string, days: number, date: string, note: string) => void;
+  addComment: (id: string, text: string, author: string) => void;
   removeTimeLog: (taskId: string, logId: string) => void;
 
   addSprint: (s: Omit<Sprint, "id" | "createdAt">) => Sprint;
@@ -201,6 +203,19 @@ export const useStore = create<Store>()(
           };
         }),
 
+      addComment: (id, text, author) =>
+        set((s) => {
+          const t = s.tasks.find((x) => x.id === id);
+          if (!t) return {};
+          const c = { id: uid(), at: new Date().toISOString(), author, text };
+          return {
+            tasks: s.tasks.map((x) =>
+              x.id === id ? { ...x, comments: [...(x.comments ?? []), c].slice(-200), updatedAt: c.at } : x,
+            ),
+            activity: log(s, { taskId: id, kind: "updated", message: `${author} commented on #${t.code}` }),
+          };
+        }),
+
       removeTimeLog: (taskId, logId) =>
         set((s) => ({
           tasks: s.tasks.map((x) =>
@@ -254,17 +269,18 @@ export const useStore = create<Store>()(
         set((s) => ({ settings: { ...s.settings, tours: { seen: s.settings.tours?.seen ?? [], auto } } })),
 
       importData: (data) =>
-        set({
+        suppressEvents(() => set({
           tasks: data.tasks,
           sprints: data.sprints,
           activity: data.activity ?? [],
           activeSprintId: data.activeSprintId,
           settings: data.settings,
-        }),
+        })),
 
-      resetData: () => set((s) => ({ ...buildEmptyWorkspace(s.settings.userName), settings: s.settings })),
+      // Bulk replacements aren't task events, so automations ignore them.
+      resetData: () => suppressEvents(() => set((s) => ({ ...buildEmptyWorkspace(s.settings.userName), settings: s.settings }))),
 
-      loadSampleData: () => set((s) => ({ ...buildSeed(), settings: s.settings })),
+      loadSampleData: () => suppressEvents(() => set((s) => ({ ...buildSeed(), settings: s.settings }))),
     }),
     {
       name: STORAGE_KEY,
