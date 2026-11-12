@@ -278,7 +278,8 @@ function Editor({ workflow }: { workflow: Workflow }) {
   return (
     <div className="flex h-[calc(100dvh-8.5rem)] min-h-[560px] flex-col gap-3 lg:h-[calc(100dvh-9.5rem)]">
       {/* Toolbar */}
-      <div className="glass flex flex-wrap items-center gap-2 rounded-[20px] p-2 pl-3">
+      {/* z-30: the toolbar's Test menu must open above the canvas and settings panel. */}
+      <div className="glass relative z-30 flex flex-wrap items-center gap-2 rounded-[20px] p-2 pl-3">
         <button
           onClick={() => {
             if (dirty && !window.confirm("Leave without saving your changes?")) return;
@@ -511,7 +512,8 @@ function TestMenu({ onRun, busy, trigType }: { onRun: (dryRun: boolean, taskId: 
   }, [open]);
   const sorted = [...tasks].sort((a, b) => Number(b.sprintId === activeSprintId) - Number(a.sprintId === activeSprintId));
   return (
-    <div className="relative" ref={ref}>
+    // On phones the menu spans the toolbar's width (the toolbar is its positioning parent); on larger screens it hangs under the button.
+    <div className="sm:relative" ref={ref}>
       <Button size="sm" onClick={() => setOpen((o) => !o)} disabled={busy} aria-expanded={open}>
         {busy ? <Loader2 className="size-3.5 animate-spin" /> : <FlaskConical className="size-3.5" />} Test
       </Button>
@@ -521,9 +523,12 @@ function TestMenu({ onRun, busy, trigType }: { onRun: (dryRun: boolean, taskId: 
             initial={{ opacity: 0, y: -6, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
-            className="glass-strong absolute right-0 top-10 z-30 w-[min(300px,calc(100vw-32px))] space-y-3 rounded-2xl p-4"
+            className="glass-strong absolute inset-x-2 top-full z-30 mt-2 space-y-3 rounded-2xl p-4 sm:inset-x-auto sm:right-0 sm:top-10 sm:mt-0 sm:w-[300px]"
           >
             <p className="text-sm font-semibold">Test workflow</p>
+            {usesTask && tasks.length === 0 && (
+              <p className="rounded-xl bg-warn/10 px-3 py-2 text-xs text-warn">You have no tasks yet, so this trigger has nothing to test with. Add a task first.</p>
+            )}
             {usesTask && (
               <label className="flex flex-col gap-1.5">
                 <span className="text-xs font-medium text-fg-2">Sample task</span>
@@ -578,7 +583,7 @@ function TestResults({ run, onClose, onSelect }: { run: Execution; onClose: () =
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 24 }}
-      className="glass-strong absolute inset-x-3 bottom-3 z-20 max-h-[45%] overflow-hidden rounded-[20px] sm:left-auto sm:w-[420px]"
+      className="glass-strong absolute bottom-3 right-3 z-20 flex max-h-[55%] w-[min(420px,calc(100%-24px))] flex-col overflow-hidden rounded-[20px]"
       role="region"
       aria-label="Test results"
     >
@@ -592,7 +597,7 @@ function TestResults({ run, onClose, onSelect }: { run: Execution; onClose: () =
           <X className="size-3.5" />
         </button>
       </div>
-      <div className="scroll-thin max-h-[calc(45vh-60px)] overflow-y-auto p-2">
+      <div className="scroll-thin min-h-0 flex-1 overflow-y-auto p-2">
         {run.error && <p className="mx-2 mb-2 rounded-xl bg-st-blocked/10 px-3 py-2 text-xs text-st-blocked">{run.error}</p>}
         {run.nodes.map((n) => {
           const out = n.output as { count?: number; detail?: unknown; true?: { count: number }; false?: { count: number } } | null;
@@ -609,7 +614,13 @@ function TestResults({ run, onClose, onSelect }: { run: Execution; onClose: () =
             </button>
           );
         })}
-        {run.nodes.length <= 1 && !run.error && <p className="px-3 py-2 text-xs text-fg-3">Only the trigger ran — connect it to a step.</p>}
+        {run.nodes.length <= 1 && !run.error && (
+          <p className="px-3 py-2 text-xs leading-relaxed text-fg-3">
+            {((run.nodes[0]?.output as { count?: number } | null)?.count ?? 0) === 0
+              ? "The trigger had nothing to pass on, so no steps ran. Add a task (or a sprint) to test with, or pick a sample task in the Test menu."
+              : "Only the trigger ran. Connect it to a step."}
+          </p>
+        )}
       </div>
     </motion.div>
   );
